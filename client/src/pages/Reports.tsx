@@ -28,8 +28,9 @@ export default function Reports() {
   // Queries
   const transactionsQuery = trpc.transactions.getByDateRange.useQuery(
     {
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      // Converter string de data (YYYY-MM-DD) para Date com hora local
+      startDate: new Date(startDate + 'T00:00:00'),
+      endDate: new Date(endDate + 'T23:59:59'),
     },
     { enabled: !!startDate && !!endDate }
   );

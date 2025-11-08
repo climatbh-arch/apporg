@@ -345,13 +345,20 @@ export async function getTransactionsByDateRange(startDate: Date, endDate: Date)
   const db = await getDb();
   if (!db) return [];
 
+  // Ajustar as datas para incluir todo o dia (00:00 a 23:59:59)
+  const adjustedStartDate = new Date(startDate);
+  adjustedStartDate.setHours(0, 0, 0, 0);
+  
+  const adjustedEndDate = new Date(endDate);
+  adjustedEndDate.setHours(23, 59, 59, 999);
+
   return await db
     .select()
     .from(transactions)
     .where(
       and(
-        gte(transactions.createdAt, startDate),
-        lte(transactions.createdAt, endDate)
+        gte(transactions.createdAt, adjustedStartDate),
+        lte(transactions.createdAt, adjustedEndDate)
       )
     )
     .orderBy(desc(transactions.createdAt));
@@ -361,7 +368,7 @@ export async function createTransaction(data: typeof transactions.$inferInsert) 
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const result = await db.insert(transactions).values(data);
+  const result = await db.insert(transactions).values(data as any);
   return result;
 }
 

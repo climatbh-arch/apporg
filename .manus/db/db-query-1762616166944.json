@@ -1,0 +1,19 @@
+{
+  "query": "SELECT id, type, category, description, amount, status, createdAt FROM transactions ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3uabyMD38DTuLvb.root --database Nmy9KSx4Q5cBPuBDAvYfYa --execute SELECT id, type, category, description, amount, status, createdAt FROM transactions ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "type": "income",
+      "category": "Serviço de Manutenção",
+      "description": "Manutenção de ar condicionado - Cliente Teste",
+      "amount": "350.00",
+      "status": "completed",
+      "createdAt": "2025-11-08 15:26:41"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttype\tcategory\tdescription\tamount\tstatus\tcreatedAt\n1\tincome\tServiço de Manutenção\tManutenção de ar condicionado - Cliente Teste\t350.00\tcompleted\t2025-11-08 15:26:41\n",
+  "stderr": "",
+  "execution_time_ms": 97
+}
