@@ -270,8 +270,14 @@ class SDKServer {
     const signedInAt = new Date();
     let user = await db.getUserByOpenId(sessionUserId);
 
-    // If user not in DB, sync from OAuth server automatically
+    // If user not in DB, check if they are the owner
     if (!user) {
+      // Only allow the owner to access the system
+      if (sessionUserId !== ENV.ownerOpenId) {
+        console.warn(`[Auth] Unauthorized access attempt by user: ${sessionUserId}`);
+        throw ForbiddenError("Acesso negado. Apenas o proprietário pode acessar o sistema.");
+      }
+
       try {
         const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
         await db.upsertUser({
@@ -280,6 +286,7 @@ class SDKServer {
           email: userInfo.email ?? null,
           loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
           lastSignedIn: signedInAt,
+          role: "admin", // Owner is always admin
         });
         user = await db.getUserByOpenId(userInfo.openId);
       } catch (error) {
