@@ -12,6 +12,10 @@ import Inventory from "./pages/Inventory";
 import Financial from "./pages/Financial";
 import Reports from "./pages/Reports";
 import Login from "./pages/Login";
+import WorkOrderEdit from "./pages/WorkOrderEdit";
+import QuoteEdit from "./pages/QuoteEdit";
+import ScheduleCalendar from "./pages/ScheduleCalendar";
+import Notifications from "./pages/Notifications";
 
 function Router() {
   return (
@@ -24,6 +28,10 @@ function Router() {
       <Route path={"/inventory"} component={Inventory} />
       <Route path={"/financial"} component={Financial} />
       <Route path={"/reports"} component={Reports} />
+      <Route path={"/work-orders/:id"} component={WorkOrderEdit} />
+      <Route path={"/quotes/:id"} component={QuoteEdit} />
+      <Route path={"/schedule"} component={ScheduleCalendar} />
+      <Route path={"/notifications"} component={Notifications} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
