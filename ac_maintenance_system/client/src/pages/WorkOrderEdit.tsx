@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -16,15 +16,32 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, ArrowLeft, Save, AlertCircle } from "lucide-react";
+import { Loader2, ArrowLeft, Save, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
+
+interface WorkOrderData {
+  id: number;
+  description: string;
+  status: "pending" | "approved" | "in_progress" | "completed" | "cancelled";
+  totalValue: number;
+  notes: string;
+  clientName: string;
+  equipmentModel: string;
+  createdAt: string;
+  updatedAt: string;
+  statusHistory?: Array<{
+    status: string;
+    changedAt: string;
+    changedBy: string;
+  }>;
+}
 
 export default function WorkOrderEdit() {
   const [, params] = useRoute("/work-orders/:id");
   const [, navigate] = useLocation();
   const orderId = params?.id ? parseInt(params.id) : null;
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<WorkOrderData>>({
     description: "",
     status: "pending",
     totalValue: 0,
@@ -32,70 +49,102 @@ export default function WorkOrderEdit() {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [statusHistory, setStatusHistory] = useState<Array<{
+    status: string;
+    changedAt: string;
+    changedBy: string;
+  }>>([]);
+  const [workOrder, setWorkOrder] = useState<WorkOrderData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock: Em produção, buscar do servidor
-  const workOrder = {
-    id: orderId,
-    description: "Manutenção preventiva - Split 12.000 BTU",
-    status: "pending",
-    totalValue: 250,
-    notes: "Cliente solicitou limpeza completa",
-    clientName: "João Silva",
-    equipmentModel: "Split 12.000 BTU",
-    createdAt: new Date().toISOString(),
-  };
+  // Mock data - Em produção, buscar do servidor via tRPC
+  useEffect(() => {
+    if (orderId) {
+      setIsLoading(true);
+      // Simular carregamento do banco de dados
+      setTimeout(() => {
+        const mockData: WorkOrderData = {
+          id: orderId,
+          description: "Manutenção preventiva - Split 12.000 BTU",
+          status: "pending",
+          totalValue: 250,
+          notes: "Cliente solicitou limpeza completa",
+          clientName: "João Silva",
+          equipmentModel: "Split 12.000 BTU",
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          updatedAt: new Date().toISOString(),
+          statusHistory: [
+            {
+              status: "Criada",
+              changedAt: new Date(Date.now() - 86400000).toISOString(),
+              changedBy: "Sistema",
+            },
+          ],
+        };
+        setWorkOrder(mockData);
+        setFormData(mockData);
+        setStatusHistory(mockData.statusHistory || []);
+        setIsLoading(false);
+      }, 500);
+    }
+  }, [orderId]);
 
   const statusOptions = [
-    { value: "pending", label: "Pendente" },
-    { value: "approved", label: "Aprovado" },
-    { value: "in_progress", label: "Em Execução" },
-    { value: "completed", label: "Finalizado" },
-    { value: "cancelled", label: "Cancelado" },
+    { value: "pending", label: "Pendente", color: "bg-yellow-100 text-yellow-800" },
+    { value: "approved", label: "Aprovado", color: "bg-blue-100 text-blue-800" },
+    { value: "in_progress", label: "Em Execução", color: "bg-purple-100 text-purple-800" },
+    { value: "completed", label: "Finalizado", color: "bg-green-100 text-green-800" },
+    { value: "cancelled", label: "Cancelado", color: "bg-red-100 text-red-800" },
   ];
 
   const handleStatusChange = (newStatus: string) => {
-    setFormData({ ...formData, status: newStatus });
+    const oldStatus = formData.status;
+    setFormData({ ...formData, status: newStatus as any });
+    
+    // Adicionar ao histórico
+    if (oldStatus !== newStatus) {
+      const newHistoryEntry = {
+        status: statusOptions.find(opt => opt.value === newStatus)?.label || newStatus,
+        changedAt: new Date().toISOString(),
+        changedBy: "Usuário Atual",
+      };
+      setStatusHistory([...statusHistory, newHistoryEntry]);
+    }
   };
 
   const handleSave = async () => {
-    if (!formData.description.trim()) {
+    if (!formData.description?.trim()) {
       toast.error("Descrição é obrigatória");
       return;
     }
 
-    if (formData.totalValue <= 0) {
+    if (!formData.totalValue || formData.totalValue <= 0) {
       toast.error("Valor total deve ser maior que zero");
       return;
     }
 
     setIsSaving(true);
     try {
-      // Simular salvamento
+      // Simular salvamento no banco de dados
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      
       toast.success("Ordem de serviço atualizada com sucesso!");
-      navigate("/work-orders");
+      
+      // Aguardar um pouco antes de navegar
+      setTimeout(() => {
+        navigate("/work-orders");
+      }, 1000);
     } catch (error) {
       toast.error("Erro ao salvar ordem de serviço");
+      console.error(error);
     } finally {
       setIsSaving(false);
     }
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "approved":
-        return "bg-blue-100 text-blue-800";
-      case "in_progress":
-        return "bg-purple-100 text-purple-800";
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+    const option = statusOptions.find(opt => opt.value === status);
+    return option?.color || "bg-gray-100 text-gray-800";
   };
 
   const getStatusLabel = (status: string) => {
@@ -113,6 +162,16 @@ export default function WorkOrderEdit() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -122,6 +181,7 @@ export default function WorkOrderEdit() {
             variant="ghost"
             size="icon"
             onClick={() => navigate("/work-orders")}
+            title="Voltar para ordens de serviço"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -145,7 +205,7 @@ export default function WorkOrderEdit() {
                   <div>
                     <Label>Cliente</Label>
                     <Input
-                      value={workOrder.clientName}
+                      value={formData.clientName || ""}
                       disabled
                       className="mt-1"
                     />
@@ -153,7 +213,7 @@ export default function WorkOrderEdit() {
                   <div>
                     <Label>Equipamento</Label>
                     <Input
-                      value={workOrder.equipmentModel}
+                      value={formData.equipmentModel || ""}
                       disabled
                       className="mt-1"
                     />
@@ -172,7 +232,7 @@ export default function WorkOrderEdit() {
                   <Label htmlFor="description">Descrição *</Label>
                   <Textarea
                     id="description"
-                    value={formData.description || workOrder.description}
+                    value={formData.description || ""}
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
@@ -185,7 +245,7 @@ export default function WorkOrderEdit() {
                   <Label htmlFor="notes">Notas Adicionais</Label>
                   <Textarea
                     id="notes"
-                    value={formData.notes || workOrder.notes}
+                    value={formData.notes || ""}
                     onChange={(e) =>
                       setFormData({ ...formData, notes: e.target.value })
                     }
@@ -209,11 +269,11 @@ export default function WorkOrderEdit() {
                     type="number"
                     step="0.01"
                     min="0"
-                    value={formData.totalValue || workOrder.totalValue}
+                    value={formData.totalValue || ""}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        totalValue: parseFloat(e.target.value),
+                        totalValue: parseFloat(e.target.value) || 0,
                       })
                     }
                     className="mt-1"
@@ -231,7 +291,7 @@ export default function WorkOrderEdit() {
                 <div>
                   <Label htmlFor="status">Status *</Label>
                   <Select
-                    value={formData.status}
+                    value={formData.status || "pending"}
                     onValueChange={handleStatusChange}
                   >
                     <SelectTrigger id="status" className="mt-1">
@@ -245,6 +305,9 @@ export default function WorkOrderEdit() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Selecione o andamento do atendimento
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -285,8 +348,8 @@ export default function WorkOrderEdit() {
                 <CardTitle className="text-sm">Status Atual</CardTitle>
               </CardHeader>
               <CardContent>
-                <Badge className={`${getStatusColor(formData.status)} w-full justify-center py-2`}>
-                  {getStatusLabel(formData.status)}
+                <Badge className={`${getStatusColor(formData.status || "pending")} w-full justify-center py-2`}>
+                  {getStatusLabel(formData.status || "pending")}
                 </Badge>
               </CardContent>
             </Card>
@@ -294,15 +357,31 @@ export default function WorkOrderEdit() {
             {/* Timeline */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Histórico</CardTitle>
+                <CardTitle className="text-sm">Histórico de Status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <div className="border-l-2 border-gray-200 pl-3">
-                  <p className="font-medium">Criada</p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(workOrder.createdAt).toLocaleDateString("pt-BR")}
-                  </p>
-                </div>
+                {statusHistory.length > 0 ? (
+                  statusHistory.map((entry, index) => (
+                    <div key={index} className="border-l-2 border-blue-200 pl-3 pb-3">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-blue-600" />
+                        <p className="font-medium">{entry.status}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(entry.changedAt).toLocaleDateString("pt-BR", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Por: {entry.changedBy}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground">Nenhuma alteração registrada</p>
+                )}
               </CardContent>
             </Card>
 
@@ -319,7 +398,13 @@ export default function WorkOrderEdit() {
                 <div>
                   <p className="text-muted-foreground">Valor</p>
                   <p className="font-medium">
-                    R$ {(formData.totalValue || workOrder.totalValue).toFixed(2)}
+                    R$ {(formData.totalValue || 0).toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Criada em</p>
+                  <p className="font-medium text-xs">
+                    {workOrder?.createdAt ? new Date(workOrder.createdAt).toLocaleDateString("pt-BR") : "-"}
                   </p>
                 </div>
               </CardContent>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, ArrowLeft, Save, AlertCircle, Plus, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeft, Save, AlertCircle, Plus, Trash2, CheckCircle, Download } from "lucide-react";
 import { toast } from "sonner";
 
 interface QuoteItem {
@@ -33,61 +33,105 @@ interface QuoteItem {
   unitPrice: number;
 }
 
+interface QuoteData {
+  id: number;
+  clientName: string;
+  description: string;
+  items: QuoteItem[];
+  notes: string;
+  status: "pending" | "approved" | "rejected" | "converted";
+  totalValue: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function QuoteEdit() {
   const [, params] = useRoute("/quotes/:id");
   const [, navigate] = useLocation();
   const quoteId = params?.id ? parseInt(params.id) : null;
 
-  const [formData, setFormData] = useState({
-    clientName: "João Silva",
-    description: "Orçamento para manutenção de ar condicionado",
-    items: [
-      { id: 1, description: "Manutenção preventiva", quantity: 1, unitPrice: 150 },
-      { id: 2, description: "Limpeza de filtro", quantity: 2, unitPrice: 50 },
-    ] as QuoteItem[],
+  const [formData, setFormData] = useState<Partial<QuoteData>>({
+    clientName: "",
+    description: "",
+    items: [],
     notes: "",
     status: "pending",
+    totalValue: 0,
   });
 
-  const [newItem, setNewItem] = useState({
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newItem, setNewItem] = useState<Partial<QuoteItem>>({
     description: "",
     quantity: 1,
     unitPrice: 0,
   });
 
-  const [isSaving, setIsSaving] = useState(false);
+  // Mock data - Em produção, buscar do servidor via tRPC
+  useEffect(() => {
+    if (quoteId) {
+      setIsLoading(true);
+      setTimeout(() => {
+        const mockData: QuoteData = {
+          id: quoteId,
+          clientName: "João Silva",
+          description: "Orçamento para manutenção de ar condicionado",
+          items: [
+            { id: 1, description: "Manutenção preventiva", quantity: 1, unitPrice: 150 },
+            { id: 2, description: "Limpeza de filtro", quantity: 2, unitPrice: 50 },
+          ],
+          notes: "Válido por 30 dias",
+          status: "pending",
+          totalValue: 250,
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        setFormData(mockData);
+        setIsLoading(false);
+      }, 500);
+    }
+  }, [quoteId]);
 
   const statusOptions = [
-    { value: "pending", label: "Pendente" },
-    { value: "approved", label: "Aprovado" },
-    { value: "rejected", label: "Rejeitado" },
+    { value: "pending", label: "Pendente", color: "bg-yellow-100 text-yellow-800" },
+    { value: "approved", label: "Aprovado", color: "bg-green-100 text-green-800" },
+    { value: "rejected", label: "Rejeitado", color: "bg-red-100 text-red-800" },
+    { value: "converted", label: "Convertido em OS", color: "bg-blue-100 text-blue-800" },
   ];
 
-  const calculateTotal = () => {
-    return formData.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+  const calculateTotal = (items: QuoteItem[]) => {
+    return items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
   };
 
   const handleAddItem = () => {
-    if (!newItem.description.trim()) {
+    if (!newItem.description?.trim()) {
       toast.error("Descrição do item é obrigatória");
       return;
     }
 
-    if (newItem.quantity <= 0 || newItem.unitPrice < 0) {
-      toast.error("Quantidade e preço devem ser válidos");
+    if (!newItem.quantity || newItem.quantity <= 0) {
+      toast.error("Quantidade deve ser maior que zero");
       return;
     }
 
-    const item: QuoteItem = {
-      id: Date.now(),
+    if (!newItem.unitPrice || newItem.unitPrice <= 0) {
+      toast.error("Preço unitário deve ser maior que zero");
+      return;
+    }
+
+    const items = formData.items || [];
+    const newItemData = {
+      id: Math.max(...items.map(i => i.id), 0) + 1,
       description: newItem.description,
       quantity: newItem.quantity,
       unitPrice: newItem.unitPrice,
     };
 
+    const updatedItems = [...items, newItemData];
     setFormData({
       ...formData,
-      items: [...formData.items, item],
+      items: updatedItems,
+      totalValue: calculateTotal(updatedItems),
     });
 
     setNewItem({ description: "", quantity: 1, unitPrice: 0 });
@@ -95,20 +139,27 @@ export default function QuoteEdit() {
   };
 
   const handleRemoveItem = (itemId: number) => {
+    const items = (formData.items || []).filter(item => item.id !== itemId);
     setFormData({
       ...formData,
-      items: formData.items.filter((item) => item.id !== itemId),
+      items,
+      totalValue: calculateTotal(items),
     });
-    toast.success("Item removido!");
+    toast.success("Item removido com sucesso!");
   };
 
   const handleSave = async () => {
-    if (!formData.description.trim()) {
+    if (!formData.clientName?.trim()) {
+      toast.error("Nome do cliente é obrigatório");
+      return;
+    }
+
+    if (!formData.description?.trim()) {
       toast.error("Descrição é obrigatória");
       return;
     }
 
-    if (formData.items.length === 0) {
+    if (!formData.items || formData.items.length === 0) {
       toast.error("Adicione pelo menos um item ao orçamento");
       return;
     }
@@ -117,25 +168,25 @@ export default function QuoteEdit() {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Orçamento atualizado com sucesso!");
-      navigate("/quotes");
+      setTimeout(() => {
+        navigate("/quotes");
+      }, 1000);
     } catch (error) {
       toast.error("Erro ao salvar orçamento");
+      console.error(error);
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handleExportPDF = () => {
+    toast.success("Orçamento exportado para PDF!");
+    // Implementar exportação real
+  };
+
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+    const option = statusOptions.find(opt => opt.value === status);
+    return option?.color || "bg-gray-100 text-gray-800";
   };
 
   const getStatusLabel = (status: string) => {
@@ -153,57 +204,98 @@ export default function QuoteEdit() {
     );
   }
 
-  const total = calculateTotal();
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/quotes")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Editar Orçamento</h1>
-            <p className="text-muted-foreground">Orçamento #{quoteId}</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/quotes")}
+              title="Voltar para orçamentos"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Editar Orçamento</h1>
+              <p className="text-muted-foreground">Orçamento #{quoteId}</p>
+            </div>
           </div>
+          <Button
+            variant="outline"
+            onClick={handleExportPDF}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Exportar PDF
+          </Button>
         </div>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Form */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Client & Description */}
+            {/* Client Info */}
             <Card>
               <CardHeader>
-                <CardTitle>Informações do Orçamento</CardTitle>
+                <CardTitle>Informações do Cliente</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="clientName">Cliente *</Label>
+                  <Label htmlFor="clientName">Nome do Cliente *</Label>
                   <Input
                     id="clientName"
-                    value={formData.clientName}
+                    value={formData.clientName || ""}
                     onChange={(e) =>
                       setFormData({ ...formData, clientName: e.target.value })
                     }
+                    placeholder="Nome completo do cliente"
                     className="mt-1"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Description */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Descrição do Orçamento</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="description">Descrição *</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    placeholder="Descreva o serviço ou produto"
+                    className="mt-1 min-h-20"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Descrição do Serviço *</Label>
+                  <Label htmlFor="notes">Notas Adicionais</Label>
                   <Textarea
-                    id="description"
-                    value={formData.description}
+                    id="notes"
+                    value={formData.notes || ""}
                     onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
+                      setFormData({ ...formData, notes: e.target.value })
                     }
-                    placeholder="Descreva o serviço"
+                    placeholder="Ex: Válido por 30 dias, Inclui garantia, etc"
                     className="mt-1 min-h-20"
                   />
                 </div>
@@ -217,83 +309,98 @@ export default function QuoteEdit() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Items Table */}
-                <div className="border rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Descrição</TableHead>
-                        <TableHead className="w-20">Qtd</TableHead>
-                        <TableHead className="w-24">Preço Unit.</TableHead>
-                        <TableHead className="w-24">Total</TableHead>
-                        <TableHead className="w-10"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {formData.items.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>{item.description}</TableCell>
-                          <TableCell>{item.quantity}</TableCell>
-                          <TableCell>
-                            R$ {item.unitPrice.toFixed(2)}
-                          </TableCell>
-                          <TableCell>
-                            R$ {(item.quantity * item.unitPrice).toFixed(2)}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRemoveItem(item.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </TableCell>
+                {formData.items && formData.items.length > 0 && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Descrição</TableHead>
+                          <TableHead className="text-right">Quantidade</TableHead>
+                          <TableHead className="text-right">Preço Unitário</TableHead>
+                          <TableHead className="text-right">Subtotal</TableHead>
+                          <TableHead className="text-right">Ação</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      </TableHeader>
+                      <TableBody>
+                        {formData.items.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>{item.description}</TableCell>
+                            <TableCell className="text-right">{item.quantity}</TableCell>
+                            <TableCell className="text-right">
+                              R$ {item.unitPrice.toFixed(2)}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                              R$ {(item.quantity * item.unitPrice).toFixed(2)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveItem(item.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
 
-                {/* Add New Item */}
+                {/* Add Item Form */}
                 <div className="border-t pt-4 space-y-3">
-                  <h4 className="font-medium text-sm">Adicionar Item</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <Input
-                      placeholder="Descrição"
-                      value={newItem.description}
-                      onChange={(e) =>
-                        setNewItem({ ...newItem, description: e.target.value })
-                      }
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Quantidade"
-                      min="1"
-                      value={newItem.quantity}
-                      onChange={(e) =>
-                        setNewItem({
-                          ...newItem,
-                          quantity: parseInt(e.target.value) || 1,
-                        })
-                      }
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Preço"
-                      step="0.01"
-                      min="0"
-                      value={newItem.unitPrice}
-                      onChange={(e) =>
-                        setNewItem({
-                          ...newItem,
-                          unitPrice: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                    />
+                  <h3 className="font-medium">Adicionar Item</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <Label htmlFor="itemDesc" className="text-xs">Descrição</Label>
+                      <Input
+                        id="itemDesc"
+                        value={newItem.description || ""}
+                        onChange={(e) =>
+                          setNewItem({ ...newItem, description: e.target.value })
+                        }
+                        placeholder="Ex: Manutenção"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="itemQty" className="text-xs">Quantidade</Label>
+                      <Input
+                        id="itemQty"
+                        type="number"
+                        min="1"
+                        value={newItem.quantity || 1}
+                        onChange={(e) =>
+                          setNewItem({
+                            ...newItem,
+                            quantity: parseInt(e.target.value) || 1,
+                          })
+                        }
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="itemPrice" className="text-xs">Preço Unitário</Label>
+                      <Input
+                        id="itemPrice"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={newItem.unitPrice || ""}
+                        onChange={(e) =>
+                          setNewItem({
+                            ...newItem,
+                            unitPrice: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        placeholder="0.00"
+                        className="mt-1"
+                      />
+                    </div>
                   </div>
                   <Button
                     onClick={handleAddItem}
-                    variant="outline"
                     className="w-full gap-2"
                   >
                     <Plus className="h-4 w-4" />
@@ -303,20 +410,32 @@ export default function QuoteEdit() {
               </CardContent>
             </Card>
 
-            {/* Notes */}
+            {/* Status */}
             <Card>
               <CardHeader>
-                <CardTitle>Observações</CardTitle>
+                <CardTitle>Status do Orçamento</CardTitle>
               </CardHeader>
               <CardContent>
-                <Textarea
-                  value={formData.notes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, notes: e.target.value })
-                  }
-                  placeholder="Observações adicionais"
-                  className="min-h-20"
-                />
+                <div>
+                  <Label htmlFor="status">Status *</Label>
+                  <Select
+                    value={formData.status || "pending"}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, status: value as any })
+                    }
+                  >
+                    <SelectTrigger id="status" className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardContent>
             </Card>
 
@@ -350,60 +469,48 @@ export default function QuoteEdit() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Total */}
+            {/* Status Badge */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Total do Orçamento</CardTitle>
+                <CardTitle className="text-sm">Status Atual</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-green-600">
-                  R$ {total.toFixed(2)}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, status: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Badge className={`${getStatusColor(formData.status)} w-full justify-center py-2`}>
-                  {getStatusLabel(formData.status)}
+                <Badge className={`${getStatusColor(formData.status || "pending")} w-full justify-center py-2`}>
+                  {getStatusLabel(formData.status || "pending")}
                 </Badge>
               </CardContent>
             </Card>
 
-            {/* Summary */}
+            {/* Total */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Resumo</CardTitle>
+                <CardTitle className="text-sm">Resumo Financeiro</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal:</span>
+                  <span className="font-medium">R$ {(formData.totalValue || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold border-t pt-3">
+                  <span>Total:</span>
+                  <span>R$ {(formData.totalValue || 0).toFixed(2)}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Informações</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Itens</span>
-                  <span className="font-medium">{formData.items.length}</span>
+                <div>
+                  <p className="text-muted-foreground">ID</p>
+                  <p className="font-medium">#{quoteId}</p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">R$ {total.toFixed(2)}</span>
+                <div>
+                  <p className="text-muted-foreground">Itens</p>
+                  <p className="font-medium">{formData.items?.length || 0}</p>
                 </div>
               </CardContent>
             </Card>
