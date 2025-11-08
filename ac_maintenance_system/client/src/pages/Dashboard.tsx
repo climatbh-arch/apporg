@@ -12,9 +12,15 @@ import {
   CheckCircle2,
   Clock,
   Package,
+  Users,
+  FileText,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { DashboardCharts } from "@/components/DashboardCharts";
+import { KPICards } from "@/components/KPICards";
+import { RevenueChart } from "@/components/RevenueChart";
+import { UpcomingMaintenance } from "@/components/UpcomingMaintenance";
+import { ActivityTimeline } from "@/components/ActivityTimeline";
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -35,12 +41,12 @@ export default function Dashboard() {
 
   // Dados para gráficos
   const monthlyProfit = [
-    { month: 'Jan', profit: 2400, revenue: 4000, expense: 1600 },
-    { month: 'Fev', profit: 1398, revenue: 3000, expense: 1602 },
-    { month: 'Mar', profit: 9800, revenue: 2000, expense: 9800 },
-    { month: 'Abr', profit: 3908, revenue: 2780, expense: 1908 },
-    { month: 'Mai', profit: 4800, revenue: 1890, expense: 1300 },
-    { month: 'Jun', profit: 3800, revenue: 2390, expense: 2800 },
+    { month: 'Jan', profit: 2400, revenue: 4000, expense: 1600, receita: 4000, despesa: 1600 },
+    { month: 'Fev', profit: 1398, revenue: 3000, expense: 1602, receita: 3000, despesa: 1602 },
+    { month: 'Mar', profit: 9800, revenue: 2000, expense: 9800, receita: 2000, despesa: 9800 },
+    { month: 'Abr', profit: 3908, revenue: 2780, expense: 1908, receita: 2780, despesa: 1908 },
+    { month: 'Mai', profit: 4800, revenue: 1890, expense: 1300, receita: 1890, despesa: 1300 },
+    { month: 'Jun', profit: 3800, revenue: 2390, expense: 2800, receita: 2390, despesa: 2800 },
   ];
 
   const servicesByType = [
@@ -57,6 +63,51 @@ export default function Dashboard() {
     { name: 'Aprovado', value: pendingOrders.filter(o => o.status === 'approved').length || 0 },
     { name: 'Em Execução', value: pendingOrders.filter(o => o.status === 'in_progress').length || 0 },
     { name: 'Finalizado', value: pendingOrders.filter(o => o.status === 'completed').length || 0 },
+  ];
+
+  // Mock data para próximas manutenções
+  const upcomingMaintenances = [
+    {
+      id: 1,
+      clientName: "João Silva",
+      equipmentModel: "Split 12.000 BTU",
+      scheduledDate: new Date(Date.now() + 86400000).toISOString(),
+      address: "Rua A, 123",
+      type: "preventiva" as const,
+    },
+    {
+      id: 2,
+      clientName: "Maria Santos",
+      equipmentModel: "Janela 10.000 BTU",
+      scheduledDate: new Date(Date.now() + 172800000).toISOString(),
+      address: "Rua B, 456",
+      type: "corretiva" as const,
+    },
+  ];
+
+  // Mock data para atividades recentes
+  const recentActivities = [
+    {
+      id: 1,
+      type: "order_created" as const,
+      description: "Nova ordem de serviço criada",
+      timestamp: new Date(Date.now() - 3600000).toISOString(),
+      user: "Admin",
+    },
+    {
+      id: 2,
+      type: "order_completed" as const,
+      description: "Ordem de serviço finalizada",
+      timestamp: new Date(Date.now() - 7200000).toISOString(),
+      user: "Técnico João",
+    },
+    {
+      id: 3,
+      type: "payment_received" as const,
+      description: "Pagamento recebido",
+      timestamp: new Date(Date.now() - 10800000).toISOString(),
+      user: "Sistema",
+    },
   ];
 
   const balance = dailyStats.income - dailyStats.expense;
@@ -76,92 +127,26 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Income Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Entradas Hoje</CardTitle>
-              <DollarSign className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold text-green-600">
-                    R$ {dailyStats.income.toFixed(2)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Serviços pagos</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
+        {/* KPI Cards */}
+        {!isLoading && (
+          <KPICards
+            totalClients={15}
+            totalEquipments={32}
+            monthlyRevenue={dailyStats.income * 30}
+            pendingOrders={pendingOrders.length}
+          />
+        )}
 
-          {/* Expense Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Saídas Hoje</CardTitle>
-              <TrendingUp className="h-4 w-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold text-red-600">
-                    R$ {dailyStats.expense.toFixed(2)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Despesas</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Balance Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Saldo do Dia</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <>
-                  <div
-                    className={`text-2xl font-bold ${
-                      balance >= 0 ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    R$ {balance.toFixed(2)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {balance >= 0 ? "Lucro" : "Prejuízo"}
-                  </p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Work Orders Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ordens de Serviço</CardTitle>
-              <Clock className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold">{pendingOrders.length}</div>
-                  <p className="text-xs text-muted-foreground">Pendentes/Em andamento</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
+        {/* Revenue Chart */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RevenueChart data={monthlyProfit} />
+          <div className="grid grid-cols-1 gap-6">
+            <UpcomingMaintenance maintenances={upcomingMaintenances} />
+          </div>
         </div>
+
+        {/* Activity Timeline */}
+        <ActivityTimeline activities={recentActivities} />
 
         {/* Alerts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -312,6 +297,3 @@ export default function Dashboard() {
     </DashboardLayout>
   );
 }
-
-// Import icons
-import { Users, FileText } from "lucide-react";

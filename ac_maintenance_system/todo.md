@@ -166,3 +166,95 @@
 - [ ] Criar template de email para lembretes de manutenção
 - [ ] Criar rota tRPC para enviar emails
 - [ ] Testar envio de emails
+
+
+---
+
+## 🚀 NOVAS MELHORIAS - FASE 3 (Solicitadas pelo usuário)
+
+### 🎨 Fase 1: Dashboard com Gráficos e KPIs
+- [ ] Melhorar dashboard com cards de KPIs (total clientes, equipamentos, receita)
+- [ ] Adicionar gráfico de receita/despesa por período
+- [ ] Mostrar próximas manutenções agendadas
+- [ ] Criar timeline de atividades recentes
+- [ ] Adicionar filtros de período (semana, mês, ano)
+
+### 📊 Fase 2: Relatórios Avançados
+- [ ] Implementar relatório de manutenção por período com filtros
+- [ ] Implementar relatório financeiro detalhado (receita/despesa)
+- [ ] Adicionar exportação para PDF com gráficos
+- [ ] Adicionar exportação para Excel
+- [ ] Criar gráficos de performance (serviços por técnico, etc.)
+
+### 🔍 Fase 3: Busca, Filtros e Paginação
+- [ ] Implementar busca global por cliente/equipamento
+- [ ] Adicionar filtros avançados em listas (cliente, status, período)
+- [ ] Implementar ordenação de colunas
+- [ ] Adicionar paginação (10, 25, 50 itens por página)
+- [ ] Salvar preferências de filtros do usuário
+
+### 📅 Fase 4: Calendário e Agendamentos
+- [ ] Implementar calendário visual de agendamentos
+- [ ] Criar modal de agendamento com seleção de data/hora
+- [ ] Implementar lembretes de manutenção preventiva
+- [ ] Bloquear datas/horários ocupados
+- [ ] Enviar notificações de agendamento
+
+### 📧 Fase 5: Notificações e Integrações
+- [ ] Implementar envio de orçamento por email
+- [ ] Integrar WhatsApp para confirmação de serviço
+- [ ] Implementar SMS de lembretes
+- [ ] Criar templates de email profissionais
+- [ ] Adicionar fila de envio de mensagens
+
+### 🎨 Fase 6: Melhorias de UX/Formulários
+- [ ] Adicionar máscaras de entrada (telefone, CEP)
+- [ ] Implementar validações em tempo real
+- [ ] Adicionar autocompletar de cidades/estados
+- [ ] Implementar upload de fotos de equipamentos
+- [ ] Melhorar toast notifications com ícones
+- [ ] Adicionar confirmações antes de deletar
+
+### 🌙 Fase 7: Dark Mode e Performance
+- [ ] Implementar dark mode toggle
+- [ ] Adicionar temas de cores customizáveis
+- [ ] Implementar atalhos de teclado (Cmd+K para busca global)
+- [ ] Implementar PWA (modo offline)
+- [ ] Adicionar cache de dados
+- [ ] Lazy loading de imagens
+- [ ] Compressão de dados
+
+### 📝 Fase 8: Edição de Ordens e Orçamentos
+- [ ] Implementar edição completa de ordens de serviço
+- [ ] Adicionar mudança de status (pendente → concluída)
+- [ ] Criar módulo de orçamento separado
+- [ ] Implementar aprovação de orçamento
+- [ ] Adicionar histórico de alterações de cada OS
+
+### 🔐 Fase 9: Segurança e Permissões
+- [ ] Implementar roles (admin, técnico, gerente)
+- [ ] Adicionar controle de acesso por página
+- [ ] Implementar auditoria de ações
+- [ ] Adicionar 2FA (autenticação de dois fatores)
+- [ ] Implementar backup automático
+- [ ] Criar histórico de alterações
+
+### ✅ Fase 10: Testes e Ajustes Finais
+- [ ] Testar todas as funcionalidades
+- [ ] Verificar responsividade mobile
+- [ ] Otimizar performance
+- [ ] Corrigir bugs encontrados
+- [ ] Documentar novas funcionalidades
+- [ ] Fazer checkpoint final
+
+---
+
+## 📊 Progresso das Novas Melhorias
+
+**Status:** Iniciando Fase 1 (Dashboard com Gráficos e KPIs)
+
+**Próximas Ações:**
+1. Melhorar dashboard com cards de KPIs
+2. Adicionar gráficos de receita/despesa
+3. Mostrar próximas manutenções
+4. Criar timeline de atividades
