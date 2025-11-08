@@ -100,12 +100,60 @@ export default function Reports() {
     });
   };
 
+  const exportPDFMutation = trpc.reports.exportMonthlyReportPDF.useMutation({
+    onSuccess: (data) => {
+      const link = document.createElement('a');
+      const blob = new Blob([Buffer.from(data.pdf, 'base64')], {
+        type: 'application/pdf',
+      });
+      link.href = URL.createObjectURL(blob);
+      link.download = data.filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      toast.success('Relatório PDF exportado com sucesso!');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao exportar relatório PDF');
+    },
+  });
+
+  const exportCSVMutation = trpc.reports.exportMonthlyReportCSV.useMutation({
+    onSuccess: (data) => {
+      const link = document.createElement('a');
+      const blob = new Blob([data.csv], {
+        type: 'text/csv;charset=utf-8;',
+      });
+      link.href = URL.createObjectURL(blob);
+      link.download = data.filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      toast.success('Relatório CSV exportado com sucesso!');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao exportar relatório CSV');
+    },
+  });
+
   const handleExportPDF = () => {
-    toast.info('Exportação em PDF em desenvolvimento');
+    if (!startDate || !endDate) {
+      toast.error('Selecione as datas para exportar');
+      return;
+    }
+    exportPDFMutation.mutate({
+      startDate: new Date(startDate + 'T00:00:00'),
+      endDate: new Date(endDate + 'T23:59:59'),
+    });
   };
 
   const handleExportCSV = () => {
-    toast.info('Exportação em CSV em desenvolvimento');
+    if (!startDate || !endDate) {
+      toast.error('Selecione as datas para exportar');
+      return;
+    }
+    exportCSVMutation.mutate({
+      startDate: new Date(startDate + 'T00:00:00'),
+      endDate: new Date(endDate + 'T23:59:59'),
+    });
   };
 
   const topClients = clients
@@ -135,15 +183,15 @@ export default function Reports() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleExportExcel} disabled={exportMonthlyReportMutation.isPending}>
               <Download className="w-4 h-4 mr-2" />
-              Excel
+              {exportMonthlyReportMutation.isPending ? 'Exportando...' : 'Excel'}
             </Button>
-            <Button variant="outline" onClick={handleExportPDF}>
+            <Button variant="outline" onClick={handleExportPDF} disabled={exportPDFMutation.isPending}>
               <Download className="w-4 h-4 mr-2" />
-              PDF
+              {exportPDFMutation.isPending ? 'Exportando...' : 'PDF'}
             </Button>
-            <Button variant="outline" onClick={handleExportCSV}>
+            <Button variant="outline" onClick={handleExportCSV} disabled={exportCSVMutation.isPending}>
               <Download className="w-4 h-4 mr-2" />
-              CSV
+              {exportCSVMutation.isPending ? 'Exportando...' : 'CSV'}
             </Button>
           </div>
         </div>

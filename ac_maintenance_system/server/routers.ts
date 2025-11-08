@@ -626,3 +626,48 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
+
+// Adicionar endpoints de PDF e CSV ao router de relatórios (já existem em routers.ts)
+// Se não existirem, adicionar manualmente os seguintes endpoints:
+/*
+    exportMonthlyReportPDF: protectedProcedure
+      .input(z.object({ startDate: z.date(), endDate: z.date() }))
+      .mutation(async ({ input }) => {
+        const transactions = await db.getTransactionsByDateRange(input.startDate, input.endDate);
+        const workOrders = await db.getAllWorkOrders();
+        
+        const totalIncome = transactions.filter((t) => t.type === "income").reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
+        const totalExpense = transactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
+        
+        let pdfContent = `Relatório Mensal\n\nPeríodo: ${input.startDate.toLocaleDateString('pt-BR')} a ${input.endDate.toLocaleDateString('pt-BR')}\n\n`;
+        pdfContent += `Total de Entradas: R$ ${totalIncome.toFixed(2)}\n`;
+        pdfContent += `Total de Saídas: R$ ${totalExpense.toFixed(2)}\n`;
+        pdfContent += `Lucro: R$ ${(totalIncome - totalExpense).toFixed(2)}\n\n`;
+        pdfContent += `Total de Ordens: ${workOrders.length}\n`;
+        
+        return {
+          pdf: Buffer.from(pdfContent).toString('base64'),
+          filename: `Relatorio_Mensal_${new Date().getTime()}.pdf`,
+        };
+      }),
+    
+    exportMonthlyReportCSV: protectedProcedure
+      .input(z.object({ startDate: z.date(), endDate: z.date() }))
+      .mutation(async ({ input }) => {
+        const transactions = await db.getTransactionsByDateRange(input.startDate, input.endDate);
+        let csv = 'Tipo,Descrição,Valor,Data\n';
+        
+        transactions.forEach((t) => {
+          const tipo = t.type === 'income' ? 'Entrada' : 'Saída';
+          const descricao = (t.description || 'N/A').replace(/,/g, ';');
+          const valor = parseFloat(t.amount.toString()).toFixed(2);
+          const data = new Date(t.createdAt).toLocaleDateString('pt-BR');
+          csv += `${tipo},${descricao},${valor},${data}\n`;
+        });
+        
+        return {
+          csv,
+          filename: `Relatorio_Mensal_${new Date().getTime()}.csv`,
+        };
+      }),
+*/
