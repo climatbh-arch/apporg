@@ -16,7 +16,7 @@ import {
 
 export const roleEnum = pgEnum("role", ["user", "admin"]);
 export const clientTypeEnum = pgEnum("clientType", ["residential", "commercial"]);
-export const equipmentTypeEnum = pgEnum("equipmentType", ["split", "window", "portable", "floor_ceiling", "cassette"]);
+export const equipmentTypeEnum = pgEnum("equipmentType", ["split", "window", "portable", "floor_ceiling", "cassette", "vrf", "chiller", "fancoil"]);
 export const serviceTypeEnum = pgEnum("serviceType", ["installation", "maintenance", "gas_charge", "cleaning", "repair", "inspection"]);
 export const workOrderStatusEnum = pgEnum("workOrderStatus", ["pending", "approved", "in_progress", "completed", "cancelled"]);
 export const inventoryMovementTypeEnum = pgEnum("inventoryMovementType", ["in", "out"]);

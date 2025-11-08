@@ -23,6 +23,9 @@ export const translations = {
     portable: "Portátil",
     floor_ceiling: "Piso-Teto",
     cassette: "Cassete",
+    vrf: "VRF",
+    chiller: "Chiller",
+    fancoil: "Fancoil",
   },
 
   // Tipo de Serviço
