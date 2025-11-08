@@ -15,6 +15,13 @@
       "when": 1762614102932,
       "tag": "0001_steady_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1762642350621,
+      "tag": "0002_elite_northstar",
+      "breakpoints": true
     }
   ]
 }

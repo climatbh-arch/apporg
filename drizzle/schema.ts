@@ -71,10 +71,12 @@ export type Equipment = typeof equipments.$inferSelect;
 export type InsertEquipment = typeof equipments.$inferInsert;
 
 /**
- * Orçamentos e Ordens de Serviço
+ * Orçamentos (Quotes)
  */
-export const workOrders = mysqlTable("workOrders", {
+export const quotes = mysqlTable("quotes", {
   id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  quoteNumber: varchar("quoteNumber", { length: 50 }).notNull().unique(),
   clientId: int("clientId").notNull(),
   equipmentId: int("equipmentId"),
   serviceType: mysqlEnum("serviceType", [
@@ -85,17 +87,77 @@ export const workOrders = mysqlTable("workOrders", {
     "repair",
     "inspection",
   ]).notNull(),
-  status: mysqlEnum("status", [
+  status: mysqlEnum("quoteStatus", [
+    "draft",
+    "sent",
+    "approved",
+    "rejected",
+    "converted",
+  ]).default("draft").notNull(),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  discountPercent: decimal("discountPercent", { precision: 5, scale: 2 }).default("0").notNull(),
+  discountAmount: decimal("discountAmount", { precision: 10, scale: 2 }).default("0").notNull(),
+  totalValue: decimal("totalValue", { precision: 10, scale: 2 }).notNull(),
+  description: text("description"),
+  validityDate: timestamp("validityDate"),
+  sentDate: timestamp("sentDate"),
+  approvedDate: timestamp("approvedDate"),
+  convertedToWorkOrderId: int("convertedToWorkOrderId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Quote = typeof quotes.$inferSelect;
+export type InsertQuote = typeof quotes.$inferInsert;
+
+/**
+ * Itens de Orçamento
+ */
+export const quoteItems = mysqlTable("quoteItems", {
+  id: int("id").autoincrement().primaryKey(),
+  quoteId: int("quoteId").notNull(),
+  description: varchar("description", { length: 255 }).notNull(),
+  quantity: int("quantity").notNull(),
+  unitPrice: decimal("unitPrice", { precision: 10, scale: 2 }).notNull(),
+  totalPrice: decimal("totalPrice", { precision: 10, scale: 2 }).notNull(),
+  itemType: mysqlEnum("itemType", ["part", "product", "labor"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type QuoteItem = typeof quoteItems.$inferSelect;
+export type InsertQuoteItem = typeof quoteItems.$inferInsert;
+
+/**
+ * Ordens de Serviço (Work Orders)
+ */
+export const workOrders = mysqlTable("workOrders", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  workOrderNumber: varchar("workOrderNumber", { length: 50 }).notNull().unique(),
+  clientId: int("clientId").notNull(),
+  equipmentId: int("equipmentId"),
+  quoteId: int("quoteId"),
+  serviceType: mysqlEnum("serviceType", [
+    "installation",
+    "maintenance",
+    "gas_charge",
+    "cleaning",
+    "repair",
+    "inspection",
+  ]).notNull(),
+  status: mysqlEnum("workOrderStatus", [
     "pending",
     "approved",
     "in_progress",
     "completed",
     "cancelled",
   ]).default("pending").notNull(),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
   totalValue: decimal("totalValue", { precision: 10, scale: 2 }).notNull(),
   description: text("description"),
   technician: varchar("technician", { length: 255 }),
   scheduledDate: timestamp("scheduledDate"),
+  startDate: timestamp("startDate"),
   completedDate: timestamp("completedDate"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -105,7 +167,7 @@ export type WorkOrder = typeof workOrders.$inferSelect;
 export type InsertWorkOrder = typeof workOrders.$inferInsert;
 
 /**
- * Itens de Orçamento/OS (peças, produtos, mão de obra)
+ * Itens de Ordem de Serviço (peças, produtos, mão de obra)
  */
 export const workOrderItems = mysqlTable("workOrderItems", {
   id: int("id").autoincrement().primaryKey(),

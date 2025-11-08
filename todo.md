@@ -63,6 +63,70 @@
 - [ ] Implementar geração e download de PDF
 - [ ] Implementar envio de orçamento por email/WhatsApp
 
+## FASE 8: Separação Profissional de Orçamentos e Ordens de Serviço
+
+### Schema do Banco de Dados
+- [x] Criar tabela `quotes` (Orçamentos) separada de workOrders
+- [x] Adicionar campos específicos para Orçamentos (número sequencial, desconto, data validade)
+- [x] Melhorar tabela workOrders com campos específicos (data conclusão, técnico responsável)
+- [x] Criar tabela `quoteItems` para itens de orçamento
+- [x] Executar migração do banco de dados
+
+### Routers tRPC
+- [x] Criar router `quotes` com CRUD completo
+- [x] Criar router `workOrders` com CRUD melhorado
+- [ ] Adicionar endpoints para conversão Orçamento → OS
+- [ ] Adicionar endpoints para geração de PDF de Orçamentos
+- [ ] Adicionar endpoints para geração de PDF de OS
+
+### Frontend - Página de Orçamentos
+- [x] Criar página `Quotes.tsx`
+- [x] Implementar lista de orçamentos com filtros (status, cliente, data)
+- [x] Implementar formulário de novo orçamento
+- [ ] Implementar adição dinâmica de itens
+- [x] Implementar cálculo automático de total e desconto
+- [ ] Implementar botões: Salvar, Gerar PDF, Enviar Cliente, Converter em OS
+- [x] Implementar edição de orçamento
+- [x] Implementar exclusão de orçamento
+
+### Frontend - Página de Ordens de Serviço
+- [ ] Melhorar página `WorkOrders.tsx`
+- [ ] Implementar lista de OS com filtros (status, cliente, data)
+- [ ] Implementar formulário de nova OS
+- [ ] Implementar adição dinâmica de itens (peças, mão de obra)
+- [ ] Implementar cálculo automático de total
+- [ ] Implementar botões: Salvar, Gerar PDF, Marcar como Concluída, Enviar Cliente
+- [ ] Implementar edição de OS
+- [ ] Implementar exclusão de OS
+
+### Funcionalidades Avançadas
+- [x] Geração de números sequenciais para Orçamentos
+- [x] Geração de números sequenciais para Ordens de Serviço
+- [ ] Conversão de Orçamento aprovado → Ordem de Serviço
+- [x] Cálculo automático de desconto percentual
+- [ ] Validação de campos obrigatórios
+- [ ] Envio de Orçamento por Email
+- [ ] Envio de Orçamento por WhatsApp
+- [ ] Envio de OS por Email
+- [ ] Envio de OS por WhatsApp
+
+### Testes
+- [ ] Testar criação de Orçamento
+- [ ] Testar edição de Orçamento
+- [ ] Testar exclusão de Orçamento
+- [ ] Testar adição de itens em Orçamento
+- [ ] Testar cálculo de desconto
+- [ ] Testar conversão Orçamento → OS
+- [ ] Testar geração de PDF de Orçamento
+- [ ] Testar geração de PDF de OS
+- [ ] Testar criação de Ordem de Serviço
+- [ ] Testar edição de Ordem de Serviço
+- [ ] Testar exclusão de Ordem de Serviço
+- [ ] Testar adição de itens em OS
+- [ ] Testar mudança de status de OS
+- [ ] Testar envio por Email
+- [ ] Testar envio por WhatsApp
+
 ### Estoque
 - [x] Criar página de lista de estoque
 - [x] Implementar formulário de novo item de estoque

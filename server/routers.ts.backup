@@ -77,10 +77,6 @@ const clientsRouter = router({
 // ============ EQUIPMENTS ROUTER ============
 
 const equipmentsRouter = router({
-  list: protectedProcedure.query(async () => {
-    return await db.getAllEquipments();
-  }),
-
   getByClientId: protectedProcedure
     .input(z.object({ clientId: z.number() }))
     .query(async ({ input }) => {
@@ -143,89 +139,6 @@ const equipmentsRouter = router({
     }),
 });
 
-// ============ QUOTES ROUTER ============
-
-const quotesRouter = router({
-  list: protectedProcedure.query(async ({ ctx }) => {
-    return await db.getAllQuotes(ctx.user.id);
-  }),
-
-  getById: protectedProcedure
-    .input(z.object({ id: z.number() }))
-    .query(async ({ input, ctx }) => {
-      const quote = await db.getQuoteById(input.id, ctx.user.id);
-      if (!quote) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Orçamento não encontrado" });
-      }
-      return quote;
-    }),
-
-  create: protectedProcedure
-    .input(
-      z.object({
-        clientId: z.number(),
-        equipmentId: z.number().optional(),
-        serviceType: z.enum([
-          "installation",
-          "maintenance",
-          "gas_charge",
-          "cleaning",
-          "repair",
-          "inspection",
-        ]),
-        totalValue: z.string(),
-        description: z.string().optional(),
-        validityDate: z.date().optional(),
-        discountPercent: z.string().optional(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const quoteNumber = `ORC-${Date.now()}`;
-      const subtotal = parseFloat(input.totalValue);
-      const discountPercent = parseFloat(input.discountPercent || "0");
-      const discountAmount = (subtotal * discountPercent) / 100;
-      const totalValue = subtotal - discountAmount;
-
-      const result = await db.createQuote({
-        userId: ctx.user.id,
-        quoteNumber,
-        clientId: input.clientId,
-        equipmentId: input.equipmentId,
-        serviceType: input.serviceType,
-        status: "draft",
-        subtotal: input.totalValue,
-        discountPercent: input.discountPercent || "0",
-        discountAmount: discountAmount.toString(),
-        totalValue: totalValue.toString(),
-        description: input.description,
-        validityDate: input.validityDate,
-      });
-      return result;
-    }),
-
-  update: protectedProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        status: z.enum(["draft", "sent", "approved", "rejected", "converted"]).optional(),
-        totalValue: z.string().optional(),
-        description: z.string().optional(),
-        discountPercent: z.string().optional(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { id, ...data } = input;
-      return await db.updateQuote(id, data, ctx.user.id);
-    }),
-
-  delete: protectedProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ input, ctx }) => {
-      await db.deleteQuote(input.id, ctx.user.id);
-      return { success: true };
-    }),
-});
-
 // ============ WORK ORDERS ROUTER ============
 
 const workOrdersRouter = router({
@@ -268,14 +181,10 @@ const workOrdersRouter = router({
         scheduledDate: z.date().optional(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
-      const workOrderNumber = `OS-${Date.now()}`;
+    .mutation(async ({ input }) => {
       const result = await db.createWorkOrder({
         ...input,
-        userId: ctx.user.id,
-        workOrderNumber,
         status: "pending",
-        subtotal: input.totalValue,
       });
       return result;
     }),
@@ -520,7 +429,6 @@ export const appRouter = router({
   // Feature routers
   clients: clientsRouter,
   equipments: equipmentsRouter,
-  quotes: quotesRouter,
   workOrders: workOrdersRouter,
   workOrderItems: workOrderItemsRouter,
   inventory: inventoryRouter,

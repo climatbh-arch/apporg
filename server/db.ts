@@ -5,6 +5,8 @@ import {
   users,
   clients,
   equipments,
+  quotes,
+  quoteItems,
   workOrders,
   workOrderItems,
   inventory,
@@ -147,6 +149,13 @@ export async function deleteClient(id: number) {
 }
 
 // ============ EQUIPMENTS ============
+
+export async function getAllEquipments() {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(equipments).orderBy(desc(equipments.createdAt));
+}
 
 export async function getEquipmentsByClientId(clientId: number) {
   const db = await getDb();
@@ -463,4 +472,88 @@ export async function getDailyStats(date: Date) {
     expense,
     workOrders: workOrdersCount.length,
   };
+}
+
+
+// ============ QUOTES ============
+
+export async function getAllQuotes(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(quotes)
+    .where(eq(quotes.userId, userId))
+    .orderBy(desc(quotes.createdAt));
+}
+
+export async function getQuoteById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(quotes)
+    .where(and(eq(quotes.id, id), eq(quotes.userId, userId)))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createQuote(data: typeof quotes.$inferInsert) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(quotes).values(data);
+  return result;
+}
+
+export async function updateQuote(id: number, data: Partial<typeof quotes.$inferInsert>, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Verificar se o quote pertence ao usuário
+  const quote = await getQuoteById(id, userId);
+  if (!quote) throw new Error("Quote not found or unauthorized");
+
+  await db.update(quotes).set(data).where(eq(quotes.id, id));
+  return getQuoteById(id, userId);
+}
+
+export async function deleteQuote(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Verificar se o quote pertence ao usuário
+  const quote = await getQuoteById(id, userId);
+  if (!quote) throw new Error("Quote not found or unauthorized");
+
+  await db.delete(quotes).where(eq(quotes.id, id));
+}
+
+// ============ QUOTE ITEMS ============
+
+export async function getQuoteItems(quoteId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(quoteItems)
+    .where(eq(quoteItems.quoteId, quoteId));
+}
+
+export async function createQuoteItem(data: typeof quoteItems.$inferInsert) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(quoteItems).values(data);
+  return result;
+}
+
+export async function deleteQuoteItem(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(quoteItems).where(eq(quoteItems.id, id));
 }
