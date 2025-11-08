@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { translations } from "@/lib/translations";
 
-export default function WorkOrders() {
+export default function Quotes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -28,7 +28,7 @@ export default function WorkOrders() {
     clientName: string;
     description: string;
     totalValue: number;
-    status: "pending" | "approved" | "in_progress" | "completed" | "cancelled";
+    status: "pending" | "approved" | "rejected";
   }>({
     clientName: "",
     description: "",
@@ -36,13 +36,13 @@ export default function WorkOrders() {
     status: "pending",
   });
 
-  const ordersQuery = trpc.workOrders?.list?.useQuery?.() || { data: [], isLoading: false };
-  const orders = ordersQuery.data || [];
+  const quotesQuery = trpc.quotes?.list?.useQuery?.() || { data: [], isLoading: false };
+  const quotes = quotesQuery.data || [];
 
-  const filteredOrders = orders.filter(
-    (order: any) =>
-      order.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredQuotes = quotes.filter(
+    (quote: any) =>
+      quote.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      quote.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const resetForm = () => {
@@ -60,12 +60,8 @@ export default function WorkOrders() {
       case "pending":
         return "bg-yellow-100 text-yellow-800";
       case "approved":
-        return "bg-blue-100 text-blue-800";
-      case "in_progress":
-        return "bg-purple-100 text-purple-800";
-      case "completed":
         return "bg-green-100 text-green-800";
-      case "cancelled":
+      case "rejected":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -77,13 +73,9 @@ export default function WorkOrders() {
       case "pending":
         return "Pendente";
       case "approved":
-        return "Aprovada";
-      case "in_progress":
-        return "Em Progresso";
-      case "completed":
-        return "Concluída";
-      case "cancelled":
-        return "Cancelada";
+        return "Aprovado";
+      case "rejected":
+        return "Rejeitado";
       default:
         return status;
     }
@@ -95,9 +87,9 @@ export default function WorkOrders() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Ordens de Serviço</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Orçamentos</h1>
             <p className="text-muted-foreground mt-1">
-              Gerencie todos os serviços executados
+              Gerencie todos os orçamentos da sua empresa
             </p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -109,18 +101,18 @@ export default function WorkOrders() {
                 }}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Nova Ordem
+                Novo Orçamento
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
-                  {editingId ? "Editar Ordem" : "Nova Ordem de Serviço"}
+                  {editingId ? "Editar Orçamento" : "Novo Orçamento"}
                 </DialogTitle>
                 <DialogDescription>
                   {editingId
-                    ? "Atualize as informações da ordem"
-                    : "Preencha os dados da nova ordem de serviço"}
+                    ? "Atualize as informações do orçamento"
+                    : "Preencha os dados do novo orçamento"}
                 </DialogDescription>
               </DialogHeader>
 
@@ -178,43 +170,43 @@ export default function WorkOrders() {
         {/* Search */}
         <div className="flex gap-2">
           <Input
-            placeholder="Pesquisar ordens..."
+            placeholder="Pesquisar orçamentos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="max-w-sm"
           />
         </div>
 
-        {/* Orders List */}
+        {/* Quotes List */}
         <div className="grid gap-4">
-          {ordersQuery.isLoading ? (
+          {quotesQuery.isLoading ? (
             <>
               <Skeleton className="h-24" />
               <Skeleton className="h-24" />
             </>
-          ) : filteredOrders.length === 0 ? (
+          ) : filteredQuotes.length === 0 ? (
             <Card>
               <CardContent className="pt-6 text-center">
-                <p className="text-muted-foreground">Nenhuma ordem encontrada</p>
+                <p className="text-muted-foreground">Nenhum orçamento encontrado</p>
               </CardContent>
             </Card>
           ) : (
-            filteredOrders.map((order: any) => (
-              <Card key={order.id}>
+            filteredQuotes.map((quote: any) => (
+              <Card key={quote.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                   <div>
-                    <CardTitle>{order.clientName}</CardTitle>
-                    <CardDescription>{order.description}</CardDescription>
+                    <CardTitle>{quote.clientName}</CardTitle>
+                    <CardDescription>{quote.description}</CardDescription>
                   </div>
-                  <Badge className={getStatusColor(order.status)}>
-                    {getStatusLabel(order.status)}
+                  <Badge className={getStatusColor(quote.status)}>
+                    {getStatusLabel(quote.status)}
                   </Badge>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-2xl font-bold">
-                        R$ {order.totalValue?.toFixed(2) || "0.00"}
+                        R$ {quote.totalValue?.toFixed(2) || "0.00"}
                       </p>
                     </div>
                     <div className="flex gap-2">
