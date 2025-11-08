@@ -9,9 +9,19 @@ type UseAuthOptions = {
 };
 
 export function useAuth(options?: UseAuthOptions) {
-  const { redirectOnUnauthenticated = false, redirectPath = getLoginUrl() } =
+  const { redirectOnUnauthenticated = false, redirectPath = "/login" } =
     options ?? {};
   const utils = trpc.useUtils();
+
+  // Try to get user from localStorage first (local auth)
+  const localUser = useMemo(() => {
+    try {
+      const stored = localStorage.getItem("auth_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }, []);
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
@@ -21,6 +31,9 @@ export function useAuth(options?: UseAuthOptions) {
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
       utils.auth.me.setData(undefined, null);
+      // Clear local auth
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
     },
   });
 
@@ -38,22 +51,28 @@ export function useAuth(options?: UseAuthOptions) {
     } finally {
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
+      // Clear local auth
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
     }
   }, [logoutMutation, utils]);
+
+  // Use local user if available, otherwise use OAuth user
+  const user = localUser || meQuery.data;
 
   const state = useMemo(() => {
     localStorage.setItem(
       "manus-runtime-user-info",
-      JSON.stringify(meQuery.data)
+      JSON.stringify(user)
     );
     return {
-      user: meQuery.data ?? null,
+      user: user ?? null,
       loading: meQuery.isLoading || logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
-      isAuthenticated: Boolean(meQuery.data),
+      isAuthenticated: Boolean(user),
     };
   }, [
-    meQuery.data,
+    user,
     meQuery.error,
     meQuery.isLoading,
     logoutMutation.error,
