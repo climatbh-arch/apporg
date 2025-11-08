@@ -103,6 +103,30 @@
 - [ ] Implementar validações de formulários
 - [ ] Implementar tratamento de erros
 
+## Funcionalidades Avançadas (Completas)
+
+### PDF de Orçamentos
+- [x] Instalar pdfkit e dependências
+- [x] Criar rota tRPC para gerar PDF
+- [x] Implementar template de PDF com dados da OS
+- [x] Adicionar botão "Baixar PDF" na tela de Orçamentos/OS
+- [x] Testar geração de PDF
+
+### Integração WhatsApp (Twilio)
+- [ ] Configurar conta Twilio (Opcional - requer credenciais do usuário)
+- [ ] Instalar SDK Twilio
+- [ ] Criar rota tRPC para enviar mensagem WhatsApp
+- [ ] Adicionar botão "Enviar via WhatsApp" na tela de Orçamentos/OS
+- [ ] Testar envio de mensagens
+
+### Gráficos no Dashboard
+- [x] Instalar Recharts
+- [x] Criar gráfico de Lucro por Mês
+- [x] Criar gráfico de Serviços por Tipo
+- [x] Criar gráfico de Distribuição de Status de OS
+- [x] Integrar gráficos no Dashboard
+- [x] Testar responsividade dos gráficos
+
 ## Testes e Qualidade
 - [ ] Testar CRUD de todas as entidades
 - [ ] Testar fluxo de criação de OS

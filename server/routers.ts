@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
+import { generateWorkOrderPDF } from "./pdf-generator";
 
 // ============ CLIENTS ROUTER ============
 
@@ -431,6 +432,39 @@ export const appRouter = router({
   transactions: transactionsRouter,
   maintenanceHistory: maintenanceHistoryRouter,
   dashboard: dashboardRouter,
+  pdf: router({
+    generateWorkOrderPDF: protectedProcedure
+      .input(z.object({ workOrderId: z.number() }))
+      .mutation(async ({ input }) => {
+        const workOrder = await db.getWorkOrderById(input.workOrderId);
+        if (!workOrder) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Ordem de serviço não encontrada" });
+        }
+
+        const client = await db.getClientById(workOrder.clientId);
+        const equipment = workOrder.equipmentId ? await db.getEquipmentById(workOrder.equipmentId) : null;
+
+        const pdfBuffer = await generateWorkOrderPDF({
+          id: workOrder.id,
+          clientName: client?.name || "Cliente Desconhecido",
+          clientPhone: client?.phone || "",
+          clientAddress: client?.address || "",
+          equipmentBrand: equipment?.brand || "",
+          equipmentModel: equipment?.model || "",
+          serviceType: workOrder.serviceType,
+          description: workOrder.description || "",
+          value: Number(workOrder.totalValue),
+          status: workOrder.status,
+          createdAt: workOrder.createdAt,
+          technician: workOrder.technician || undefined,
+        });
+
+        return {
+          pdf: pdfBuffer.toString("base64"),
+          filename: `OS_${workOrder.id}_${new Date().getTime()}.pdf`,
+        };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

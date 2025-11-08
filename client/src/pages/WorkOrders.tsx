@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, FileText, Trash2, Edit2 } from "lucide-react";
+import { Plus, FileText, Trash2, Edit2, Download } from "lucide-react";
 import { toast } from "sonner";
 
 export default function WorkOrders() {
@@ -68,9 +68,43 @@ export default function WorkOrders() {
       console.error("Erro ao atualizar OS:", error);
       toast.error(error.message || "Erro ao atualizar ordem de serviço");
     },
-  });  // Placeholder para delete - será implementado quando necessário
+  });
+
+  const generatePDFMutation = trpc.pdf.generateWorkOrderPDF.useMutation({
+    onSuccess: (data) => {
+      // Converter base64 para blob
+      const binaryString = atob(data.pdf);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      
+      // Criar link de download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = data.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("PDF gerado com sucesso!");
+    },
+    onError: (error: any) => {
+      console.error("Erro ao gerar PDF:", error);
+      toast.error(error.message || "Erro ao gerar PDF");
+    },
+  });
+
+  // Placeholder para delete - será implementado quando necessário
   const handleDeleteWorkOrder = (id: number) => {
     toast.info("Funcionalidade de deletar em desenvolvimento");
+  };
+
+  const handleDownloadPDF = (workOrderId: number) => {
+    generatePDFMutation.mutate({ workOrderId });
   };
   const clients = clientsQuery.data || [];
   const workOrders = workOrdersQuery.data || [];
@@ -416,6 +450,15 @@ export default function WorkOrders() {
                       </CardDescription>
                     </div>
                     <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDownloadPDF(workOrder.id)}
+                        disabled={generatePDFMutation.isPending}
+                        title="Baixar PDF"
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"

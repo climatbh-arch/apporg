@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import {
   Package,
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { DashboardCharts } from "@/components/DashboardCharts";
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -31,6 +32,32 @@ export default function Dashboard() {
   const dailyStats = dailyStatsQuery.data || { income: 0, expense: 0, workOrders: 0 };
   const pendingOrders = pendingOrdersQuery.data || [];
   const lowStockItems = lowStockQuery.data || [];
+
+  // Dados para gráficos
+  const monthlyProfit = [
+    { month: 'Jan', profit: 2400, revenue: 4000, expense: 1600 },
+    { month: 'Fev', profit: 1398, revenue: 3000, expense: 1602 },
+    { month: 'Mar', profit: 9800, revenue: 2000, expense: 9800 },
+    { month: 'Abr', profit: 3908, revenue: 2780, expense: 1908 },
+    { month: 'Mai', profit: 4800, revenue: 1890, expense: 1300 },
+    { month: 'Jun', profit: 3800, revenue: 2390, expense: 2800 },
+  ];
+
+  const servicesByType = [
+    { name: 'Manutenção', value: 12 },
+    { name: 'Instalação', value: 8 },
+    { name: 'Carga de Gás', value: 15 },
+    { name: 'Limpeza', value: 10 },
+    { name: 'Reparo', value: 7 },
+    { name: 'Inspeção', value: 5 },
+  ];
+
+  const osStatus = [
+    { name: 'Pendente', value: pendingOrders.filter(o => o.status === 'pending').length || 0 },
+    { name: 'Aprovado', value: pendingOrders.filter(o => o.status === 'approved').length || 0 },
+    { name: 'Em Execução', value: pendingOrders.filter(o => o.status === 'in_progress').length || 0 },
+    { name: 'Finalizado', value: pendingOrders.filter(o => o.status === 'completed').length || 0 },
+  ];
 
   const balance = dailyStats.income - dailyStats.expense;
   const isLoading =
@@ -275,6 +302,13 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Charts Section */}
+      <DashboardCharts 
+        monthlyProfit={monthlyProfit}
+        servicesByType={servicesByType}
+        osStatus={osStatus}
+      />
     </DashboardLayout>
   );
 }
