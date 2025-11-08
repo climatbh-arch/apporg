@@ -46,6 +46,7 @@ export type InsertUser = typeof users.$inferInsert;
  */
 export const clients = pgTable("clients", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   phone: varchar("phone", { length: 20 }),
   email: varchar("email", { length: 255 }),
@@ -88,6 +89,7 @@ export type InsertEquipment = typeof equipments.$inferInsert;
  */
 export const workOrders = pgTable("workOrders", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
   clientId: integer("clientId").notNull(),
   equipmentId: integer("equipmentId"),
   serviceType: serviceTypeEnum("serviceType").notNull(),
@@ -109,6 +111,7 @@ export type InsertWorkOrder = typeof workOrders.$inferInsert;
  */
 export const workOrderItems = pgTable("workOrderItems", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
   workOrderId: integer("workOrderId").notNull(),
   description: varchar("description", { length: 255 }).notNull(),
   quantity: integer("quantity").notNull(),
@@ -161,6 +164,7 @@ export type InsertInventoryMovement = typeof inventoryMovements.$inferInsert;
  */
 export const transactions = pgTable("transactions", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("userId").notNull(),
   type: transactionTypeEnum("type").notNull(),
   category: varchar("category", { length: 100 }).notNull(),
   description: varchar("description", { length: 255 }).notNull(),
