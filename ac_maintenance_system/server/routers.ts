@@ -9,6 +9,7 @@ import { generateWorkOrderPDF } from "./pdf-generator";
 import { sendWhatsAppMessage, formatWorkOrderMessage } from "./services/whatsapp";
 import { sendEmail, getWorkOrderEmailTemplate } from "./services/email";
 import { generateMonthlyReportExcel, generateServiceReportExcel } from "./services/reports";
+import { authRouter } from "./auth-routes";
 
 // ============ CLIENTS ROUTER ============
 
@@ -415,16 +416,7 @@ const dashboardRouter = router({
 
 export const appRouter = router({
   system: systemRouter,
-  auth: router({
-    me: publicProcedure.query((opts) => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => {
-      const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return {
-        success: true,
-      } as const;
-    }),
-  }),
+  auth: authRouter,
 
   health: router({
     check: publicProcedure.query(() => ({
