@@ -77,6 +77,37 @@ export default function Reports() {
     [] as Array<{ type: string; count: number; value: number }>
   );
 
+  const exportMonthlyReportMutation = trpc.reports.exportMonthlyReportExcel.useMutation({
+    onSuccess: (data) => {
+      const link = document.createElement('a');
+      const blob = new Blob([Buffer.from(data.excel, 'base64')], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      link.href = URL.createObjectURL(blob);
+      link.download = data.filename;
+      link.click();
+      toast.success('Relatório exportado com sucesso!');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao exportar relatório');
+    },
+  });
+
+  const handleExportExcel = () => {
+    exportMonthlyReportMutation.mutate({
+      startDate: new Date(startDate + 'T00:00:00'),
+      endDate: new Date(endDate + 'T23:59:59'),
+    });
+  };
+
+  const handleExportPDF = () => {
+    toast.info('Exportação em PDF em desenvolvimento');
+  };
+
+  const handleExportCSV = () => {
+    toast.info('Exportação em CSV em desenvolvimento');
+  };
+
   const topClients = clients
     .map((client) => ({
       ...client,
@@ -90,14 +121,6 @@ export default function Reports() {
 
   const lowStockItems = inventory.filter((item) => item.quantity <= item.minimumQuantity);
 
-  const handleExportPDF = () => {
-    toast.info("Funcionalidade de exportação em desenvolvimento");
-  };
-
-  const handleExportCSV = () => {
-    toast.info("Funcionalidade de exportação em desenvolvimento");
-  };
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -110,6 +133,10 @@ export default function Reports() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExportExcel} disabled={exportMonthlyReportMutation.isPending}>
+              <Download className="w-4 h-4 mr-2" />
+              Excel
+            </Button>
             <Button variant="outline" onClick={handleExportPDF}>
               <Download className="w-4 h-4 mr-2" />
               PDF

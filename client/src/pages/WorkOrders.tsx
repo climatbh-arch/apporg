@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, FileText, Trash2, Edit2, Download } from "lucide-react";
+import { Plus, FileText, Trash2, Edit2, Download, Mail, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function WorkOrders() {
@@ -105,6 +105,19 @@ export default function WorkOrders() {
 
   const handleDownloadPDF = (workOrderId: number) => {
     generatePDFMutation.mutate({ workOrderId });
+  };
+
+  const sendEmailMutation = trpc.messaging.sendWorkOrderEmail.useMutation({
+    onSuccess: () => {
+      toast.success("Email enviado com sucesso!");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao enviar email");
+    },
+  });
+
+  const handleSendEmail = (workOrderId: number) => {
+    sendEmailMutation.mutate({ workOrderId });
   };
   const clients = clientsQuery.data || [];
   const workOrders = workOrdersQuery.data || [];
@@ -458,6 +471,15 @@ export default function WorkOrders() {
                         title="Baixar PDF"
                       >
                         <Download className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSendEmail(workOrder.id)}
+                        disabled={sendEmailMutation.isPending}
+                        title="Enviar por Email"
+                      >
+                        <Mail className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"

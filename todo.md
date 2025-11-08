@@ -140,3 +140,29 @@
 - [ ] Configurar variáveis de ambiente
 - [ ] Fazer backup do banco de dados
 - [ ] Publicar sistema
+
+
+## Funcionalidades Avançadas - Fase 2 (Em Desenvolvimento)
+
+### Integração WhatsApp (Twilio)
+- [ ] Instalar SDK Twilio
+- [ ] Configurar variáveis de ambiente (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER)
+- [ ] Criar rota tRPC para enviar mensagem WhatsApp
+- [ ] Adicionar botão "Enviar via WhatsApp" na tela de Orçamentos/OS
+- [ ] Testar envio de mensagens WhatsApp
+
+### Relatórios em PDF/Excel
+- [ ] Instalar bibliotecas (exceljs para Excel, pdfkit para PDF avançado)
+- [ ] Criar rota tRPC para exportar relatório em PDF
+- [ ] Criar rota tRPC para exportar relatório em Excel
+- [ ] Adicionar botões de exportação na página de Relatórios
+- [ ] Incluir gráficos nos PDFs exportados
+- [ ] Testar exportação de relatórios
+
+### Notificações por Email
+- [ ] Configurar serviço de email (Nodemailer ou SendGrid)
+- [ ] Adicionar variáveis de ambiente para email
+- [ ] Criar template de email para confirmação de OS
+- [ ] Criar template de email para lembretes de manutenção
+- [ ] Criar rota tRPC para enviar emails
+- [ ] Testar envio de emails
