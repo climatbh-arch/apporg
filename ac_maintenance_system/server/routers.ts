@@ -73,6 +73,48 @@ const clientsRouter = router({
       await db.deleteClient(input.id);
       return { success: true };
     }),
+
+  search: protectedProcedure
+    .input(
+      z.object({
+        query: z.string().optional(),
+        clientType: z.enum(["residential", "commercial"]).optional(),
+        page: z.number().default(1),
+        limit: z.number().default(10),
+      })
+    )
+    .query(async ({ input }) => {
+      const allClients = await db.getAllClients();
+      
+      let filtered = allClients;
+
+      if (input.query) {
+        const q = input.query.toLowerCase();
+        filtered = filtered.filter((client: any) => {
+          const name = client.name ? client.name.toLowerCase() : "";
+          const email = client.email ? client.email.toLowerCase() : "";
+          const phone = client.phone ? client.phone.toLowerCase() : "";
+          return name.includes(q) || email.includes(q) || phone.includes(q);
+        });
+      }
+
+      if (input.clientType) {
+        filtered = filtered.filter((client: any) => client.clientType === input.clientType);
+      }
+
+      const total = filtered.length;
+      const start = (input.page - 1) * input.limit;
+      const end = start + input.limit;
+      const data = filtered.slice(start, end);
+
+      return {
+        data,
+        total,
+        page: input.page,
+        limit: input.limit,
+        pages: Math.ceil(total / input.limit),
+      };
+    }),
 });
 
 // ============ EQUIPMENTS ROUTER ============
@@ -205,6 +247,78 @@ const workOrdersRouter = router({
     .mutation(async ({ input }) => {
       const { id, ...data } = input;
       return await db.updateWorkOrder(id, data);
+    }),
+
+  // Busca e filtros avançados
+  search: protectedProcedure
+    .input(
+      z.object({
+        query: z.string().optional(),
+        status: z.enum(["pending", "approved", "in_progress", "completed", "cancelled"]).optional(),
+        serviceType: z.enum(["installation", "maintenance", "gas_charge", "cleaning", "repair", "inspection"]).optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+        minValue: z.number().optional(),
+        maxValue: z.number().optional(),
+        page: z.number().default(1),
+        limit: z.number().default(10),
+      })
+    )
+    .query(async ({ input }) => {
+      const allOrders = await db.getAllWorkOrders();
+      
+      let filtered = allOrders;
+
+      // Filtro por query (busca em cliente, descrição, técnico)
+      if (input.query) {
+        const q = input.query.toLowerCase();
+        filtered = filtered.filter((order: any) => {
+          const client = order.clientId ? order.clientId.toString() : "";
+          const desc = order.description ? order.description.toLowerCase() : "";
+          const tech = order.technician ? order.technician.toLowerCase() : "";
+          return client.includes(q) || desc.includes(q) || tech.includes(q);
+        });
+      }
+
+      // Filtro por status
+      if (input.status) {
+        filtered = filtered.filter((order: any) => order.status === input.status);
+      }
+
+      // Filtro por tipo de serviço
+      if (input.serviceType) {
+        filtered = filtered.filter((order: any) => order.serviceType === input.serviceType);
+      }
+
+      // Filtro por data
+      if (input.startDate) {
+        filtered = filtered.filter((order: any) => new Date(order.createdAt) >= input.startDate);
+      }
+      if (input.endDate) {
+        filtered = filtered.filter((order: any) => new Date(order.createdAt) <= input.endDate);
+      }
+
+      // Filtro por valor
+      if (input.minValue !== undefined) {
+        filtered = filtered.filter((order: any) => Number(order.totalValue) >= input.minValue);
+      }
+      if (input.maxValue !== undefined) {
+        filtered = filtered.filter((order: any) => Number(order.totalValue) <= input.maxValue);
+      }
+
+      // Paginação
+      const total = filtered.length;
+      const start = (input.page - 1) * input.limit;
+      const end = start + input.limit;
+      const data = filtered.slice(start, end);
+
+      return {
+        data,
+        total,
+        page: input.page,
+        limit: input.limit,
+        pages: Math.ceil(total / input.limit),
+      };
     }),
 });
 
