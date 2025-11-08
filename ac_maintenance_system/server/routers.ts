@@ -426,6 +426,14 @@ export const appRouter = router({
     }),
   }),
 
+  health: router({
+    check: publicProcedure.query(() => ({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      message: "Sistema de Controle de AC esta funcionando",
+    })),
+  }),
+
   // Feature routers
   clients: clientsRouter,
   equipments: equipmentsRouter,
