@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
   users,
+  adminCredentials,
   clients,
   equipments,
   quotes,
@@ -556,4 +557,48 @@ export async function deleteQuoteItem(id: number) {
   if (!db) throw new Error("Database not available");
 
   await db.delete(quoteItems).where(eq(quoteItems.id, id));
+}
+
+
+// ============ ADMIN CREDENTIALS ============
+
+export async function createAdminCredential(data: typeof adminCredentials.$inferInsert) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(adminCredentials).values(data);
+  return result;
+}
+
+export async function getAdminCredentialByUsername(username: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(adminCredentials)
+    .where(eq(adminCredentials.username, username))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getAdminCredentialByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(adminCredentials)
+    .where(eq(adminCredentials.userId, userId))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
 }

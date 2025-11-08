@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Inserir credenciais de admin\n-- Usuário: admin\n-- Senha: ebc40a84fce0b8a5de7804a6\n-- Hash: ff1b64ae19d82e696e2d82fafca4225e26545a52708f8dbb503bf7867e88d17381d9dc33ee2b2c509f037f7a0e657a520e3382429c289f91aede74bbcc295a60\n-- Salt: 50e2cb52ec08e14babd6af72c963026e\n\nINSERT INTO adminCredentials (userId, username, passwordHash, passwordSalt, createdAt, updatedAt)\nSELECT id, 'admin', 'ff1b64ae19d82e696e2d82fafca4225e26545a52708f8dbb503bf7867e88d17381d9dc33ee2b2c509f037f7a0e657a520e3382429c289f91aede74bbcc295a60', '50e2cb52ec08e14babd6af72c963026e', NOW(), NOW()\nFROM users\nWHERE role = 'admin'\nLIMIT 1;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3uabyMD38DTuLvb.root --database Nmy9KSx4Q5cBPuBDAvYfYa --execute \n-- Inserir credenciais de admin\n-- Usuário: admin\n-- Senha: ebc40a84fce0b8a5de7804a6\n-- Hash: ff1b64ae19d82e696e2d82fafca4225e26545a52708f8dbb503bf7867e88d17381d9dc33ee2b2c509f037f7a0e657a520e3382429c289f91aede74bbcc295a60\n-- Salt: 50e2cb52ec08e14babd6af72c963026e\n\nINSERT INTO adminCredentials (userId, username, passwordHash, passwordSalt, createdAt, updatedAt)\nSELECT id, 'admin', 'ff1b64ae19d82e696e2d82fafca4225e26545a52708f8dbb503bf7867e88d17381d9dc33ee2b2c509f037f7a0e657a520e3382429c289f91aede74bbcc295a60', '50e2cb52ec08e14babd6af72c963026e', NOW(), NOW()\nFROM users\nWHERE role = 'admin'\nLIMIT 1;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 235
+}

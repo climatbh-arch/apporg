@@ -33,23 +33,23 @@ export default function Dashboard() {
   const pendingOrders = pendingOrdersQuery.data || [];
   const lowStockItems = lowStockQuery.data || [];
 
-  // Dados para gráficos
+  // Dados para gráficos (zerados para refletir desempenho real)
   const monthlyProfit = [
-    { month: 'Jan', profit: 2400, revenue: 4000, expense: 1600 },
-    { month: 'Fev', profit: 1398, revenue: 3000, expense: 1602 },
-    { month: 'Mar', profit: 9800, revenue: 2000, expense: 9800 },
-    { month: 'Abr', profit: 3908, revenue: 2780, expense: 1908 },
-    { month: 'Mai', profit: 4800, revenue: 1890, expense: 1300 },
-    { month: 'Jun', profit: 3800, revenue: 2390, expense: 2800 },
+    { month: 'Jan', profit: 0, revenue: 0, expense: 0 },
+    { month: 'Fev', profit: 0, revenue: 0, expense: 0 },
+    { month: 'Mar', profit: 0, revenue: 0, expense: 0 },
+    { month: 'Abr', profit: 0, revenue: 0, expense: 0 },
+    { month: 'Mai', profit: 0, revenue: 0, expense: 0 },
+    { month: 'Jun', profit: 0, revenue: 0, expense: 0 },
   ];
 
   const servicesByType = [
-    { name: 'Manutenção', value: 12 },
-    { name: 'Instalação', value: 8 },
-    { name: 'Carga de Gás', value: 15 },
-    { name: 'Limpeza', value: 10 },
-    { name: 'Reparo', value: 7 },
-    { name: 'Inspeção', value: 5 },
+    { name: 'Manutenção', value: 0 },
+    { name: 'Instalação', value: 0 },
+    { name: 'Carga de Gás', value: 0 },
+    { name: 'Limpeza', value: 0 },
+    { name: 'Reparo', value: 0 },
+    { name: 'Inspeção', value: 0 },
   ];
 
   const osStatus = [
