@@ -67,6 +67,11 @@ export function useAuth(options?: UseAuthOptions) {
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
 
+    // Log error for debugging
+    if (state.error) {
+      console.error("[Auth Error]", state.error);
+    }
+
     window.location.href = redirectPath
   }, [
     redirectOnUnauthenticated,
@@ -74,6 +79,7 @@ export function useAuth(options?: UseAuthOptions) {
     logoutMutation.isPending,
     meQuery.isLoading,
     state.user,
+    state.error,
   ]);
 
   return {
