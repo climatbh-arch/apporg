@@ -13,28 +13,17 @@ import { authRouter } from "./auth-routes";
 
 // ============ CLIENTS ROUTER ============
 
-
 const clientsRouter = router({
-  list: protectedProcedure.query(async ({ ctx }) => {
-    if (!ctx.user?.id) {
-      throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
-    }
-    const allClients = await db.getAllClients();
-    return allClients.filter((client: any) => client.userId === ctx.user.id);
+  list: protectedProcedure.query(async () => {
+    return await db.getAllClients();
   }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input, ctx }) => {
-      if (!ctx.user?.id) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
-      }
+    .query(async ({ input }) => {
       const client = await db.getClientById(input.id);
       if (!client) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Cliente não encontrado" });
-      }
-      if (client.userId !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Sem permissão" });
       }
       return client;
     }),
@@ -42,9 +31,9 @@ const clientsRouter = router({
   create: protectedProcedure
     .input(
       z.object({
-        name: z.string().min(1, "Nome é obrigatório"),
+        name: z.string().min(1),
         phone: z.string().optional(),
-        email: z.string().email("Email inválido").optional(),
+        email: z.string().email().optional(),
         address: z.string().optional(),
         city: z.string().optional(),
         state: z.string().optional(),
@@ -53,20 +42,9 @@ const clientsRouter = router({
         notes: z.string().optional(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
-      if (!ctx.user?.id) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
-      }
-      try {
-        const result = await db.createClient({
-          ...input,
-          userId: ctx.user.id,
-        });
-        return result;
-      } catch (error) {
-        console.error("Erro ao criar cliente:", error);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao criar cliente" });
-      }
+    .mutation(async ({ input }) => {
+      const result = await db.createClient(input);
+      return result;
     }),
 
   update: protectedProcedure
@@ -84,34 +62,14 @@ const clientsRouter = router({
         notes: z.string().optional(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
-      if (!ctx.user?.id) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
-      }
-      const client = await db.getClientById(input.id);
-      if (!client) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Cliente não encontrado" });
-      }
-      if (client.userId !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Sem permissão" });
-      }
+    .mutation(async ({ input }) => {
       const { id, ...data } = input;
       return await db.updateClient(id, data);
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ input, ctx }) => {
-      if (!ctx.user?.id) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
-      }
-      const client = await db.getClientById(input.id);
-      if (!client) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Cliente não encontrado" });
-      }
-      if (client.userId !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Sem permissão" });
-      }
+    .mutation(async ({ input }) => {
       await db.deleteClient(input.id);
       return { success: true };
     }),
@@ -125,12 +83,10 @@ const clientsRouter = router({
         limit: z.number().default(10),
       })
     )
-    .query(async ({ input, ctx }) => {
-      if (!ctx.user?.id) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
-      }
+    .query(async ({ input }) => {
       const allClients = await db.getAllClients();
-      let filtered = allClients.filter((client: any) => client.userId === ctx.user.id);
+      
+      let filtered = allClients;
 
       if (input.query) {
         const q = input.query.toLowerCase();
