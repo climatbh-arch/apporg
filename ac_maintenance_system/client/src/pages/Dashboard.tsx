@@ -20,6 +20,7 @@ import { KPICards } from "@/components/KPICards";
 import { RevenueChart } from "@/components/RevenueChart";
 import { UpcomingMaintenance } from "@/components/UpcomingMaintenance";
 import { ActivityTimeline } from "@/components/ActivityTimeline";
+import { trpc } from "@/lib/trpc";
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -27,8 +28,8 @@ export default function Dashboard() {
   today.setHours(0, 0, 0, 0);
 
   // Queries com dados REAIS
-  const clientsQuery = trpc.clients?.list?.useQuery?.() || { data: [], isLoading: false };
-  const equipmentsQuery = trpc.equipments?.list?.useQuery?.() || { data: [], isLoading: false };
+  const clientsQuery = trpc.clients.list.useQuery() || { data: [], isLoading: false };
+  const equipmentsQuery = trpc.equipments.getByClientId.useQuery({ clientId: 0 }) || { data: [], isLoading: false };
   const workOrdersQuery = trpc.workOrders?.list?.useQuery?.() || { data: [], isLoading: false };
   const transactionsQuery = trpc.transactions?.list?.useQuery?.() || { data: [], isLoading: false };
 
