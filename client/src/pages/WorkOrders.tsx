@@ -52,6 +52,7 @@ export default function WorkOrders() {
       toast.success("Ordem de serviço criada com sucesso!");
     },
     onError: (error: any) => {
+      console.error("Erro ao criar OS:", error);
       toast.error(error.message || "Erro ao criar ordem de serviço");
     },
   });
@@ -64,6 +65,7 @@ export default function WorkOrders() {
       toast.success("Ordem de serviço atualizada com sucesso!");
     },
     onError: (error: any) => {
+      console.error("Erro ao atualizar OS:", error);
       toast.error(error.message || "Erro ao atualizar ordem de serviço");
     },
   });  // Placeholder para delete - será implementado quando necessário
@@ -94,8 +96,8 @@ export default function WorkOrders() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.clientId || !formData.serviceType || !formData.totalValue) {
-      toast.error("Preencha os campos obrigatórios");
+    if (formData.clientId === 0 || !formData.serviceType || !formData.totalValue) {
+      toast.error("Preencha os campos obrigatórios (Cliente e Valor Total)");
       return;
     }
 
