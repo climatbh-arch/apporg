@@ -608,3 +608,92 @@ export async function getUserById(id: number) {
   const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
+
+
+// ============ USER APPROVAL ============
+
+export async function getPendingUsers() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get pending users: database not available");
+    return [];
+  }
+
+  try {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.isApproved, false))
+      .orderBy(desc(users.createdAt));
+    return result;
+  } catch (error) {
+    console.error("[Database] Error getting pending users:", error);
+    return [];
+  }
+}
+
+export async function getAllApprovedUsers() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get approved users: database not available");
+    return [];
+  }
+
+  try {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.isApproved, true))
+      .orderBy(desc(users.createdAt));
+    return result;
+  } catch (error) {
+    console.error("[Database] Error getting approved users:", error);
+    return [];
+  }
+}
+
+export async function approveUser(userId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot approve user: database not available");
+    return false;
+  }
+
+  try {
+    await db
+      .update(users)
+      .set({ isApproved: true, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+    return true;
+  } catch (error) {
+    console.error("[Database] Error approving user:", error);
+    return false;
+  }
+}
+
+export async function rejectUser(userId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot reject user: database not available");
+    return false;
+  }
+
+  try {
+    // Deletar todos os dados do usuário antes de deletar o usuário
+    await db.delete(clients).where(eq(clients.userId, userId));
+    await db.delete(equipments).where(eq(equipments.userId, userId));
+    await db.delete(workOrders).where(eq(workOrders.userId, userId));
+    await db.delete(quotes).where(eq(quotes.userId, userId));
+    await db.delete(inventory).where(eq(inventory.userId, userId));
+    await db.delete(transactions).where(eq(transactions.userId, userId));
+    await db.delete(maintenanceHistory).where(eq(maintenanceHistory.userId, userId));
+    await db.delete(cashClosures).where(eq(cashClosures.userId, userId));
+    
+    // Deletar o usuário
+    await db.delete(users).where(eq(users.id, userId));
+    return true;
+  } catch (error) {
+    console.error("[Database] Error rejecting user:", error);
+    return false;
+  }
+}

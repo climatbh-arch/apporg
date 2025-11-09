@@ -15,6 +15,7 @@ import { generateMonthlyReportExcel, generateServiceReportExcel } from "./servic
 const clientsRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
     if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    if (!ctx.user.isApproved) throw new TRPCError({ code: "FORBIDDEN", message: "Sua conta está aguardando aprovação do administrador" });
     return await db.getAllClients(ctx.user.id);
   }),
 
@@ -22,6 +23,7 @@ const clientsRouter = router({
     .input(z.object({ id: z.number() }))
     .query(async ({ input, ctx }) => {
       if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      if (!ctx.user.isApproved) throw new TRPCError({ code: "FORBIDDEN", message: "Sua conta está aguardando aprovação do administrador" });
       const client = await db.getClientById(input.id, ctx.user.id);
       if (!client) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Cliente não encontrado" });
@@ -519,6 +521,42 @@ const dashboardRouter = router({
 
 // ============ MAIN APP ROUTER ============
 
+// ============ ADMIN ROUTER ============
+
+const adminRouter = router({
+  getPendingUsers: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado. Apenas administradores podem acessar." });
+    return await db.getPendingUsers();
+  }),
+
+  getAllApprovedUsers: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado. Apenas administradores podem acessar." });
+    return await db.getAllApprovedUsers();
+  }),
+
+  approveUser: protectedProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado. Apenas administradores podem acessar." });
+      const success = await db.approveUser(input.userId);
+      if (!success) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao aprovar usuário" });
+      return { success: true, message: "Usuário aprovado com sucesso" };
+    }),
+
+  rejectUser: protectedProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado. Apenas administradores podem acessar." });
+      const success = await db.rejectUser(input.userId);
+      if (!success) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao rejeitar usuário" });
+      return { success: true, message: "Usuário rejeitado e removido do sistema" };
+    }),
+});
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -531,6 +569,7 @@ export const appRouter = router({
       } as const;
     }),
   }),
+  admin: adminRouter,
 
   // Feature routers
   clients: clientsRouter,
