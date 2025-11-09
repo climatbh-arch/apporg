@@ -5,10 +5,6 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
-import { generateWorkOrderPDF } from "./pdf-generator";
-import { sendWhatsAppMessage, formatWorkOrderMessage } from "./services/whatsapp";
-import { sendEmail, getWorkOrderEmailTemplate } from "./services/email";
-import { generateMonthlyReportExcel, generateServiceReportExcel } from "./services/reports";
 
 // ============ CLIENTS ROUTER ============
 
@@ -594,82 +590,6 @@ export const appRouter = router({
   transactions: transactionsRouter,
   maintenanceHistory: maintenanceHistoryRouter,
   dashboard: dashboardRouter,
-  pdf: router({
-    generateWorkOrderPDF: protectedProcedure
-      .input(z.object({ workOrderId: z.number() }))
-      .mutation(async ({ input, ctx }) => {
-        if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
-        const workOrder = await db.getWorkOrderById(input.workOrderId, ctx.user.id);
-        if (!workOrder) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Ordem de serviço não encontrada" });
-        }
-
-        const client = await db.getClientById(workOrder.clientId, ctx.user.id);
-        const equipment = workOrder.equipmentId ? await db.getEquipmentById(workOrder.equipmentId, ctx.user.id) : null;
-
-        const pdfBuffer = await generateWorkOrderPDF({
-          id: workOrder.id,
-          clientName: client?.name || "Cliente Desconhecido",
-          clientPhone: client?.phone || "",
-          clientAddress: client?.address || "",
-          equipmentBrand: equipment?.brand || "",
-          equipmentModel: equipment?.model || "",
-          serviceType: workOrder.serviceType,
-          description: workOrder.description || "",
-          value: Number(workOrder.totalValue),
-          status: workOrder.status,
-          createdAt: workOrder.createdAt,
-          technician: workOrder.technician || undefined,
-        });
-
-        return {
-          pdf: pdfBuffer.toString("base64"),
-          filename: `OS_${workOrder.id}_${new Date().getTime()}.pdf`,
-        };
-      }),
-  }),
-  messaging: router({
-    sendWorkOrderEmail: protectedProcedure
-      .input(z.object({ workOrderId: z.number() }))
-      .mutation(async ({ input, ctx }) => {
-        if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
-        const workOrder = await db.getWorkOrderById(input.workOrderId, ctx.user.id);
-        if (!workOrder) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Ordem de serviço não encontrada" });
-        }
-
-        const client = await db.getClientById(workOrder.clientId, ctx.user.id);
-        if (!client?.email) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Cliente não possui email" });
-        }
-
-        const htmlTemplate = getWorkOrderEmailTemplate(
-          workOrder.id,
-          client.name,
-          workOrder.serviceType,
-          Number(workOrder.totalValue),
-          workOrder.description || "",
-          workOrder.technician || ""
-        );
-
-        return await sendEmail(
-          client.email,
-          `Orçamento/OS #${workOrder.id} - Confirmação`,
-          htmlTemplate
-        );
-      }),
-  }),
-  reports: router({
-    exportMonthlyReportExcel: protectedProcedure
-      .input(z.object({ startDate: z.date(), endDate: z.date() }))
-      .mutation(async ({ input }) => {
-        const buffer = await generateMonthlyReportExcel(input);
-        return {
-          excel: buffer.toString("base64"),
-          filename: `Relatorio_Mensal_${new Date().getTime()}.xlsx`,
-        };
-      }),
-  }),
 });
 
 export type AppRouter = typeof appRouter;
