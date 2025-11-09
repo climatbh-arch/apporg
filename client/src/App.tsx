@@ -31,6 +31,7 @@ function Router() {
   );
 }
 
+// UPDATED: Nov 8 2025 - Separação de Orçamentos e Ordens de Serviço
 function App() {
   return (
     <ErrorBoundary>
