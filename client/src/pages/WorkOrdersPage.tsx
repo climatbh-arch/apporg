@@ -74,8 +74,13 @@ export default function WorkOrdersPage() {
       return;
     }
 
+    const laborHours = parseFloat(formData.laborHours || "0");
+    const laborCostPerHour = parseFloat(formData.laborCostPerHour || "0");
+    const laborTotal = laborHours * laborCostPerHour;
+    const materialsTotal = parseFloat(formData.materialsTotal || "0");
+    const totalValue = laborTotal + materialsTotal;
     createWorkOrderMutation.mutate({
-      clientId: 1, // TODO: Implementar seleção de cliente
+      clientId: 1,
       clientName: formData.clientName,
       clientEmail: formData.clientEmail,
       clientPhone: formData.clientPhone,
@@ -84,8 +89,10 @@ export default function WorkOrdersPage() {
       technician: formData.technician,
       laborHours: formData.laborHours || "0",
       laborCostPerHour: formData.laborCostPerHour || "0",
+      laborTotal: laborTotal.toString(),
       materialsTotal: formData.materialsTotal || "0",
-      openedAt: formData.openedAt ? new Date(formData.openedAt) : new Date(),
+      totalValue: totalValue.toString(),
+      openedAt: formData.openedAt ? new Date(formData.openedAt) : undefined,
     });
   };
 

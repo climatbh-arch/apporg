@@ -42,26 +42,44 @@ export default function Home() {
       </header>
 
       {/* Navigation Tabs */}
-      <nav className="border-b bg-background sticky top-0 z-10">
+      <nav className="border-b bg-background sticky top-0 z-10 overflow-x-auto">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-8">
             <button
               onClick={() => setLocation("/")}
-              className="py-4 px-2 border-b-2 border-primary font-medium text-foreground hover:text-primary transition"
+              className="py-4 px-2 border-b-2 border-primary font-medium text-foreground hover:text-primary transition whitespace-nowrap"
             >
               Dashboard
             </button>
             <button
               onClick={() => setLocation("/quotes")}
-              className="py-4 px-2 border-b-2 border-transparent font-medium text-muted-foreground hover:text-foreground transition"
+              className="py-4 px-2 border-b-2 border-transparent font-medium text-muted-foreground hover:text-foreground transition whitespace-nowrap"
             >
               Orçamentos
             </button>
             <button
               onClick={() => setLocation("/work-orders")}
-              className="py-4 px-2 border-b-2 border-transparent font-medium text-muted-foreground hover:text-foreground transition"
+              className="py-4 px-2 border-b-2 border-transparent font-medium text-muted-foreground hover:text-foreground transition whitespace-nowrap"
             >
               Ordens de Serviço
+            </button>
+            <button
+              onClick={() => setLocation("/technicians")}
+              className="py-4 px-2 border-b-2 border-transparent font-medium text-muted-foreground hover:text-foreground transition whitespace-nowrap"
+            >
+              Técnicos
+            </button>
+            <button
+              onClick={() => setLocation("/products")}
+              className="py-4 px-2 border-b-2 border-transparent font-medium text-muted-foreground hover:text-foreground transition whitespace-nowrap"
+            >
+              Produtos
+            </button>
+            <button
+              onClick={() => setLocation("/financial")}
+              className="py-4 px-2 border-b-2 border-transparent font-medium text-muted-foreground hover:text-foreground transition whitespace-nowrap"
+            >
+              Financeiro
             </button>
           </div>
         </div>

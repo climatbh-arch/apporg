@@ -1,6 +1,11 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, clients, quotes, quoteItems, workOrders, workOrderItems } from "../drizzle/schema";
+import {
+  InsertUser, users, clients, quotes, quoteItems, workOrders, workOrderItems,
+  technicians, products, payments, expenses, quoteHistory, workOrderChecklist,
+  InsertClient, InsertTechnician, InsertProduct, InsertQuote, InsertQuoteItem,
+  InsertWorkOrder, InsertWorkOrderItem, InsertPayment, InsertExpense
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -17,40 +22,30 @@ export async function getDb() {
   return _db;
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) {
-    throw new Error("User openId is required for upsert");
-  }
+// ============ USERS ============
 
+export async function upsertUser(user: InsertUser): Promise<void> {
+  if (!user.openId) throw new Error("User openId is required");
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
-  }
+  if (!db) return;
 
   try {
-    const values: InsertUser = {
-      openId: user.openId,
-    };
+    const values: InsertUser = { openId: user.openId };
     const updateSet: Record<string, unknown> = {};
 
     const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
-
-    const assignNullable = (field: TextField) => {
-      const value = user[field];
-      if (value === undefined) return;
-      const normalized = value ?? null;
-      values[field] = normalized;
-      updateSet[field] = normalized;
-    };
-
-    textFields.forEach(assignNullable);
+    textFields.forEach((field) => {
+      if (user[field] !== undefined) {
+        values[field] = user[field];
+        updateSet[field] = user[field];
+      }
+    });
 
     if (user.lastSignedIn !== undefined) {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
+
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
@@ -59,17 +54,10 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.role = 'admin';
     }
 
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
+    if (!values.lastSignedIn) values.lastSignedIn = new Date();
+    if (Object.keys(updateSet).length === 0) updateSet.lastSignedIn = new Date();
 
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
+    await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
@@ -78,11 +66,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
-  }
-
+  if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
@@ -102,14 +86,14 @@ export async function getClientById(id: number, userId: number) {
   return result.length > 0 ? result[0] : null;
 }
 
-export async function createClient(data: any) {
+export async function createClient(data: InsertClient) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(clients).values(data);
   return data;
 }
 
-export async function updateClient(id: number, data: any, userId: number) {
+export async function updateClient(id: number, data: Partial<InsertClient>, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(clients).set(data).where(and(eq(clients.id, id), eq(clients.userId, userId)));
@@ -122,12 +106,82 @@ export async function deleteClient(id: number, userId: number) {
   await db.delete(clients).where(and(eq(clients.id, id), eq(clients.userId, userId)));
 }
 
+// ============ TECHNICIANS ============
+
+export async function getAllTechnicians(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(technicians).where(eq(technicians.userId, userId));
+}
+
+export async function getTechnicianById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(technicians).where(and(eq(technicians.id, id), eq(technicians.userId, userId))).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function createTechnician(data: InsertTechnician) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(technicians).values(data);
+  return data;
+}
+
+export async function updateTechnician(id: number, data: Partial<InsertTechnician>, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(technicians).set(data).where(and(eq(technicians.id, id), eq(technicians.userId, userId)));
+  return { id, ...data };
+}
+
+export async function deleteTechnician(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(technicians).where(and(eq(technicians.id, id), eq(technicians.userId, userId)));
+}
+
+// ============ PRODUCTS ============
+
+export async function getAllProducts(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(products).where(eq(products.userId, userId));
+}
+
+export async function getProductById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(products).where(and(eq(products.id, id), eq(products.userId, userId))).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function createProduct(data: InsertProduct) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(products).values(data);
+  return data;
+}
+
+export async function updateProduct(id: number, data: Partial<InsertProduct>, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(products).set(data).where(and(eq(products.id, id), eq(products.userId, userId)));
+  return { id, ...data };
+}
+
+export async function deleteProduct(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(products).where(and(eq(products.id, id), eq(products.userId, userId)));
+}
+
 // ============ QUOTES ============
 
 export async function getAllQuotes(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(quotes).where(eq(quotes.userId, userId));
+  return await db.select().from(quotes).where(eq(quotes.userId, userId)).orderBy(desc(quotes.createdAt));
 }
 
 export async function getQuoteById(id: number, userId: number) {
@@ -137,14 +191,14 @@ export async function getQuoteById(id: number, userId: number) {
   return result.length > 0 ? result[0] : null;
 }
 
-export async function createQuote(data: any) {
+export async function createQuote(data: InsertQuote) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(quotes).values(data);
   return data;
 }
 
-export async function updateQuote(id: number, data: any, userId: number) {
+export async function updateQuote(id: number, data: Partial<InsertQuote>, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(quotes).set(data).where(and(eq(quotes.id, id), eq(quotes.userId, userId)));
@@ -157,15 +211,15 @@ export async function deleteQuote(id: number, userId: number) {
   await db.delete(quotes).where(and(eq(quotes.id, id), eq(quotes.userId, userId)));
 }
 
-// ============ QUOTE ITEMS ============
-
-export async function getQuoteItems(quoteId: number) {
+export async function getQuoteItems(quoteId: number, userId: number) {
   const db = await getDb();
   if (!db) return [];
+  const quote = await getQuoteById(quoteId, userId);
+  if (!quote) return [];
   return await db.select().from(quoteItems).where(eq(quoteItems.quoteId, quoteId));
 }
 
-export async function createQuoteItem(data: any) {
+export async function createQuoteItem(data: InsertQuoteItem) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(quoteItems).values(data);
@@ -183,7 +237,7 @@ export async function deleteQuoteItem(id: number) {
 export async function getAllWorkOrders(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(workOrders).where(eq(workOrders.userId, userId));
+  return await db.select().from(workOrders).where(eq(workOrders.userId, userId)).orderBy(desc(workOrders.createdAt));
 }
 
 export async function getWorkOrderById(id: number, userId: number) {
@@ -193,14 +247,14 @@ export async function getWorkOrderById(id: number, userId: number) {
   return result.length > 0 ? result[0] : null;
 }
 
-export async function createWorkOrder(data: any) {
+export async function createWorkOrder(data: InsertWorkOrder) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(workOrders).values(data);
   return data;
 }
 
-export async function updateWorkOrder(id: number, data: any, userId: number) {
+export async function updateWorkOrder(id: number, data: Partial<InsertWorkOrder>, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(workOrders).set(data).where(and(eq(workOrders.id, id), eq(workOrders.userId, userId)));
@@ -213,15 +267,15 @@ export async function deleteWorkOrder(id: number, userId: number) {
   await db.delete(workOrders).where(and(eq(workOrders.id, id), eq(workOrders.userId, userId)));
 }
 
-// ============ WORK ORDER ITEMS ============
-
-export async function getWorkOrderItems(workOrderId: number) {
+export async function getWorkOrderItems(workOrderId: number, userId: number) {
   const db = await getDb();
   if (!db) return [];
+  const workOrder = await getWorkOrderById(workOrderId, userId);
+  if (!workOrder) return [];
   return await db.select().from(workOrderItems).where(eq(workOrderItems.workOrderId, workOrderId));
 }
 
-export async function createWorkOrderItem(data: any) {
+export async function createWorkOrderItem(data: InsertWorkOrderItem) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(workOrderItems).values(data);
@@ -234,7 +288,77 @@ export async function deleteWorkOrderItem(id: number) {
   await db.delete(workOrderItems).where(eq(workOrderItems.id, id));
 }
 
-// ============ DASHBOARD ============
+// ============ PAYMENTS ============
+
+export async function getAllPayments(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(payments).where(eq(payments.userId, userId)).orderBy(desc(payments.createdAt));
+}
+
+export async function getPaymentById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(payments).where(and(eq(payments.id, id), eq(payments.userId, userId))).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function createPayment(data: InsertPayment) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(payments).values(data);
+  return data;
+}
+
+export async function updatePayment(id: number, data: Partial<InsertPayment>, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(payments).set(data).where(and(eq(payments.id, id), eq(payments.userId, userId)));
+  return { id, ...data };
+}
+
+export async function deletePayment(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(payments).where(and(eq(payments.id, id), eq(payments.userId, userId)));
+}
+
+// ============ EXPENSES ============
+
+export async function getAllExpenses(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(expenses).where(eq(expenses.userId, userId)).orderBy(desc(expenses.createdAt));
+}
+
+export async function getExpenseById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(expenses).where(and(eq(expenses.id, id), eq(expenses.userId, userId))).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function createExpense(data: InsertExpense) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(expenses).values(data);
+  return data;
+}
+
+export async function updateExpense(id: number, data: Partial<InsertExpense>, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(expenses).set(data).where(and(eq(expenses.id, id), eq(expenses.userId, userId)));
+  return { id, ...data };
+}
+
+export async function deleteExpense(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(expenses).where(and(eq(expenses.id, id), eq(expenses.userId, userId)));
+}
+
+// ============ DASHBOARD STATS ============
 
 export async function getDashboardStats(userId: number) {
   const db = await getDb();
@@ -251,5 +375,39 @@ export async function getDashboardStats(userId: number) {
     totalWorkOrders: allWorkOrders.length,
     quotesApproved,
     workOrdersCompleted,
+  };
+}
+
+// ============ FINANCIAL REPORT ============
+
+export async function getFinancialReport(userId: number, startDate?: Date, endDate?: Date) {
+  const db = await getDb();
+  if (!db) return { totalRevenue: 0, totalExpenses: 0, totalProfit: 0, pendingPayments: 0 };
+
+  let paymentsData = await db.select().from(payments).where(eq(payments.userId, userId));
+  let expensesData = await db.select().from(expenses).where(eq(expenses.userId, userId));
+
+  if (startDate && endDate) {
+    paymentsData = paymentsData.filter(p => new Date(p.createdAt) >= startDate && new Date(p.createdAt) <= endDate);
+    expensesData = expensesData.filter(e => new Date(e.createdAt) >= startDate && new Date(e.createdAt) <= endDate);
+  }
+
+  const totalRevenue = paymentsData
+    .filter(p => p.status === 'paid')
+    .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+  const totalExpenses = expensesData
+    .filter(e => e.status === 'paid')
+    .reduce((sum, e) => sum + parseFloat(e.amount), 0);
+
+  const pendingPayments = paymentsData
+    .filter(p => p.status === 'pending' || p.status === 'overdue')
+    .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+  return {
+    totalRevenue,
+    totalExpenses,
+    totalProfit: totalRevenue - totalExpenses,
+    pendingPayments,
   };
 }

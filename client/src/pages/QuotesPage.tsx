@@ -72,8 +72,10 @@ export default function QuotesPage() {
       return;
     }
 
+    const discountAmount = (parseFloat(formData.subtotal) * parseFloat(formData.discountPercent)) / 100;
+    const totalValue = parseFloat(formData.subtotal) - discountAmount;
     createQuoteMutation.mutate({
-      clientId: 1, // TODO: Implementar seleção de cliente
+      clientId: 1,
       clientName: formData.clientName,
       clientEmail: formData.clientEmail,
       clientPhone: formData.clientPhone,
@@ -81,7 +83,9 @@ export default function QuotesPage() {
       serviceDescription: formData.serviceDescription,
       subtotal: formData.subtotal,
       discountPercent: formData.discountPercent,
-                      validityDate: formData.validityDate ? new Date(formData.validityDate) : new Date(),
+      discountAmount: discountAmount.toString(),
+      totalValue: totalValue.toString(),
+      validityDate: formData.validityDate ? new Date(formData.validityDate) : undefined,
       notes: formData.notes,
     });
   };
