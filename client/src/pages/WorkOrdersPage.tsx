@@ -29,7 +29,6 @@ export default function WorkOrdersPage() {
   const clientsQuery = trpc.clients.list.useQuery();
   const equipmentsQuery = trpc.equipments.list.useQuery();
   const createWorkOrderMutation = trpc.workOrders.create.useMutation();
-  const deleteWorkOrderMutation = trpc.workOrders.delete.useMutation();
 
   const workOrders = workOrdersQuery.data || [];
   const clients = clientsQuery.data || [];
@@ -75,7 +74,6 @@ export default function WorkOrdersPage() {
         description: formData.description,
         technician: formData.technician,
         totalValue: calculateTotal().toString(),
-        status: "open",
       });
 
       toast.success("Ordem de Serviço criada com sucesso!");
@@ -94,16 +92,6 @@ export default function WorkOrdersPage() {
       workOrdersQuery.refetch();
     } catch (error) {
       toast.error("Erro ao criar ordem de serviço");
-    }
-  };
-
-  const handleDeleteWorkOrder = async (id: number) => {
-    try {
-      await deleteWorkOrderMutation.mutateAsync({ id });
-      toast.success("Ordem de Serviço deletada!");
-      workOrdersQuery.refetch();
-    } catch (error) {
-      toast.error("Erro ao deletar ordem de serviço");
     }
   };
 
@@ -324,10 +312,10 @@ export default function WorkOrdersPage() {
                     wo.status === "in_progress" ? "bg-blue-100 text-blue-800" :
                     "bg-yellow-100 text-yellow-800"
                   }`}>
-                    {wo.status === "open" ? "Aberta" :
+                    {wo.status === "pending" ? "Aberta" :
                      wo.status === "in_progress" ? "Em andamento" :
                      wo.status === "completed" ? "Concluída" :
-                     wo.status === "delivered" ? "Entregue" : wo.status}
+                     wo.status === "cancelled" ? "Cancelada" : wo.status}
                   </span>
                 </div>
               </CardHeader>
@@ -373,7 +361,6 @@ export default function WorkOrdersPage() {
                     variant="destructive"
                     size="sm"
                     className="gap-2"
-                    onClick={() => handleDeleteWorkOrder(wo.id)}
                   >
                     <Trash2 className="w-4 h-4" />
                     Deletar
