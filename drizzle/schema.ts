@@ -1,4 +1,5 @@
 import { integer, pgEnum, pgTable, text, timestamp, varchar, date, boolean, serial } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 // ============ USERS ============
 export const users = pgTable("users", {
@@ -7,7 +8,7 @@ export const users = pgTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: pgEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: pgEnum("role", ["user", "admin"]).notNull().default("user"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -78,7 +79,7 @@ export const quotes = pgTable("quotes", {
   discountPercent: varchar("discountPercent", { length: 10 }).default("0"),
   discountAmount: varchar("discountAmount", { length: 20 }).default("0"),
   totalValue: varchar("totalValue", { length: 20 }).default("0"),
-  status: pgEnum("quote_status", ["draft", "sent", "approved", "rejected", "converted"]).default("draft"),
+  status: pgEnum("quote_status", ["draft", "sent", "approved", "rejected", "converted"]),
   validityDate: date("validityDate"),
   sentVia: varchar("sentVia", { length: 50 }),
   sentAt: timestamp("sentAt"),
@@ -129,7 +130,7 @@ export const workOrders = pgTable("workOrders", {
   laborTotal: varchar("laborTotal", { length: 20 }).default("0"),
   materialsTotal: varchar("materialsTotal", { length: 20 }).default("0"),
   totalValue: varchar("totalValue", { length: 20 }).default("0"),
-  status: pgEnum("workorder_status", ["open", "in_progress", "completed", "delivered", "cancelled"]).default("open"),
+  status: pgEnum("workorder_status", ["open", "in_progress", "completed", "delivered", "cancelled"]),
   openedAt: date("openedAt"),
   completedAt: date("completedAt"),
   clientSignature: text("clientSignature"),
@@ -144,7 +145,7 @@ export const workOrderItems = pgTable("workOrderItems", {
   id: serial("id").primaryKey(),
   workOrderId: integer("workOrderId").notNull(),
   itemName: varchar("itemName", { length: 255 }).notNull(),
-  itemType: pgEnum("itemType", ["material", "labor", "service"]).default("material"),
+  itemType: pgEnum("itemType", ["material", "labor", "service"]),
   quantity: varchar("quantity", { length: 20 }).notNull(),
   unitPrice: varchar("unitPrice", { length: 20 }).notNull(),
   totalPrice: varchar("totalPrice", { length: 20 }).notNull(),
@@ -171,8 +172,8 @@ export const payments = pgTable("payments", {
   clientId: integer("clientId").notNull(),
   clientName: varchar("clientName", { length: 255 }).notNull(),
   amount: varchar("amount", { length: 20 }).notNull(),
-  paymentMethod: pgEnum("paymentMethod", ["cash", "card", "pix", "boleto", "transfer"]).default("cash"),
-  status: pgEnum("payment_status", ["pending", "paid", "overdue", "cancelled"]).default("pending"),
+  paymentMethod: pgEnum("paymentMethod", ["cash", "card", "pix", "boleto", "transfer"]),
+  status: pgEnum("payment_status", ["pending", "paid", "overdue", "cancelled"]),
   dueDate: date("dueDate"),
   paidAt: timestamp("paidAt"),
   notes: text("notes"),
@@ -187,8 +188,8 @@ export const expenses = pgTable("expenses", {
   description: varchar("description", { length: 255 }).notNull(),
   category: varchar("category", { length: 100 }),
   amount: varchar("amount", { length: 20 }).notNull(),
-  paymentMethod: pgEnum("expense_paymentMethod", ["cash", "card", "pix", "boleto", "transfer"]).default("cash"),
-  status: pgEnum("expense_status", ["pending", "paid"]).default("pending"),
+  paymentMethod: pgEnum("expense_paymentMethod", ["cash", "card", "pix", "boleto", "transfer"]),
+  status: pgEnum("expense_status", ["pending", "paid"]),
   dueDate: date("dueDate"),
   paidAt: timestamp("paidAt"),
   notes: text("notes"),
