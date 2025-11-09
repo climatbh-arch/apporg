@@ -1,5 +1,4 @@
 import { integer, pgEnum, pgTable, text, timestamp, varchar, date, boolean, serial } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 // ============ USERS ============
 export const users = pgTable("users", {
@@ -8,7 +7,7 @@ export const users = pgTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: pgEnum("role", ["user", "admin"]).notNull().default("user"),
+  role: pgEnum("role", ["user", "admin"]),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -54,7 +53,7 @@ export const products = pgTable("products", {
   userId: integer("userId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
-  type: pgEnum("type", ["product", "service"]).default("product"),
+  type: pgEnum("type", ["product", "service"]),
   price: varchar("price", { length: 20 }).notNull(),
   cost: varchar("cost", { length: 20 }).default("0"),
   stock: integer("stock").default(0),
