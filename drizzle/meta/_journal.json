@@ -1,27 +1,5 @@
-{
-  "version": "7",
-  "dialect": "mysql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "5",
-      "when": 1762614052901,
-      "tag": "0000_whole_firedrake",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1762643516584,
-      "tag": "0001_legal_layla_miller",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1762643600000,
-      "tag": "0002_add_user_id_nullable",
-      "breakpoints": true
-    }
-  ]
+﻿{
+  "version": "5",
+  "dialect": "postgresql",
+  "entries": []
 }
