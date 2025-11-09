@@ -597,14 +597,15 @@ export const appRouter = router({
   pdf: router({
     generateWorkOrderPDF: protectedProcedure
       .input(z.object({ workOrderId: z.number() }))
-      .mutation(async ({ input }) => {
-        const workOrder = await db.getWorkOrderById(input.workOrderId);
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+        const workOrder = await db.getWorkOrderById(input.workOrderId, ctx.user.id);
         if (!workOrder) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Ordem de serviço não encontrada" });
         }
 
-        const client = await db.getClientById(workOrder.clientId);
-        const equipment = workOrder.equipmentId ? await db.getEquipmentById(workOrder.equipmentId) : null;
+        const client = await db.getClientById(workOrder.clientId, ctx.user.id);
+        const equipment = workOrder.equipmentId ? await db.getEquipmentById(workOrder.equipmentId, ctx.user.id) : null;
 
         const pdfBuffer = await generateWorkOrderPDF({
           id: workOrder.id,
@@ -630,13 +631,14 @@ export const appRouter = router({
   messaging: router({
     sendWorkOrderEmail: protectedProcedure
       .input(z.object({ workOrderId: z.number() }))
-      .mutation(async ({ input }) => {
-        const workOrder = await db.getWorkOrderById(input.workOrderId);
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+        const workOrder = await db.getWorkOrderById(input.workOrderId, ctx.user.id);
         if (!workOrder) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Ordem de serviço não encontrada" });
         }
 
-        const client = await db.getClientById(workOrder.clientId);
+        const client = await db.getClientById(workOrder.clientId, ctx.user.id);
         if (!client?.email) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "Cliente não possui email" });
         }
