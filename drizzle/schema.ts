@@ -49,6 +49,7 @@ export type InsertAdminCredential = typeof adminCredentials.$inferInsert;
  */
 export const clients = mysqlTable("clients", {
   id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   phone: varchar("phone", { length: 20 }),
   email: varchar("email", { length: 255 }),
@@ -70,6 +71,7 @@ export type InsertClient = typeof clients.$inferInsert;
  */
 export const equipments = mysqlTable("equipments", {
   id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
   clientId: int("clientId").notNull(),
   brand: varchar("brand", { length: 100 }).notNull(),
   model: varchar("model", { length: 100 }).notNull(),
@@ -204,6 +206,7 @@ export type InsertWorkOrderItem = typeof workOrderItems.$inferInsert;
  */
 export const inventory = mysqlTable("inventory", {
   id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   category: mysqlEnum("category", [
@@ -248,6 +251,7 @@ export type InsertInventoryMovement = typeof inventoryMovements.$inferInsert;
  */
 export const transactions = mysqlTable("transactions", {
   id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
   type: mysqlEnum("type", ["income", "expense"]).notNull(),
   category: varchar("category", { length: 100 }).notNull(),
   description: varchar("description", { length: 255 }).notNull(),
@@ -269,6 +273,7 @@ export type InsertTransaction = typeof transactions.$inferInsert;
  */
 export const maintenanceHistory = mysqlTable("maintenanceHistory", {
   id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
   equipmentId: int("equipmentId").notNull(),
   workOrderId: int("workOrderId"),
   description: text("description").notNull(),
@@ -286,6 +291,7 @@ export type InsertMaintenanceHistory = typeof maintenanceHistory.$inferInsert;
  */
 export const cashClosures = mysqlTable("cashClosures", {
   id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
   closureDate: timestamp("closureDate").notNull(),
   totalIncome: decimal("totalIncome", { precision: 10, scale: 2 }).notNull(),
   totalExpense: decimal("totalExpense", { precision: 10, scale: 2 }).notNull(),

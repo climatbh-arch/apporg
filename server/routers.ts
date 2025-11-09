@@ -13,14 +13,16 @@ import { generateMonthlyReportExcel, generateServiceReportExcel } from "./servic
 // ============ CLIENTS ROUTER ============
 
 const clientsRouter = router({
-  list: protectedProcedure.query(async () => {
-    return await db.getAllClients();
+  list: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    return await db.getAllClients(ctx.user.id);
   }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
-      const client = await db.getClientById(input.id);
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      const client = await db.getClientById(input.id, ctx.user.id);
       if (!client) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Cliente não encontrado" });
       }
@@ -41,8 +43,9 @@ const clientsRouter = router({
         notes: z.string().optional(),
       })
     )
-    .mutation(async ({ input }) => {
-      const result = await db.createClient(input);
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      const result = await db.createClient({ ...input, userId: ctx.user.id });
       return result;
     }),
 
@@ -61,15 +64,17 @@ const clientsRouter = router({
         notes: z.string().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
       const { id, ...data } = input;
-      return await db.updateClient(id, data);
+      return await db.updateClient(id, data, ctx.user.id);
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ input }) => {
-      await db.deleteClient(input.id);
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      await db.deleteClient(input.id, ctx.user.id);
       return { success: true };
     }),
 });
@@ -77,20 +82,23 @@ const clientsRouter = router({
 // ============ EQUIPMENTS ROUTER ============
 
 const equipmentsRouter = router({
-  list: protectedProcedure.query(async () => {
-    return await db.getAllEquipments();
+  list: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    return await db.getAllEquipments(ctx.user.id);
   }),
 
   getByClientId: protectedProcedure
     .input(z.object({ clientId: z.number() }))
-    .query(async ({ input }) => {
-      return await db.getEquipmentsByClientId(input.clientId);
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      return await db.getEquipmentsByClientId(input.clientId, ctx.user.id);
     }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
-      const equipment = await db.getEquipmentById(input.id);
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      const equipment = await db.getEquipmentById(input.id, ctx.user.id);
       if (!equipment) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Equipamento não encontrado" });
       }
@@ -111,8 +119,9 @@ const equipmentsRouter = router({
         notes: z.string().optional(),
       })
     )
-    .mutation(async ({ input }) => {
-      const result = await db.createEquipment(input);
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      const result = await db.createEquipment({ ...input, userId: ctx.user.id });
       return result;
     }),
 
@@ -130,15 +139,17 @@ const equipmentsRouter = router({
         notes: z.string().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
       const { id, ...data } = input;
-      return await db.updateEquipment(id, data);
+      return await db.updateEquipment(id, data, ctx.user.id);
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ input }) => {
-      await db.deleteEquipment(input.id);
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      await db.deleteEquipment(input.id, ctx.user.id);
       return { success: true };
     }),
 });
@@ -229,14 +240,16 @@ const quotesRouter = router({
 // ============ WORK ORDERS ROUTER ============
 
 const workOrdersRouter = router({
-  list: protectedProcedure.query(async () => {
-    return await db.getAllWorkOrders();
+  list: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    return await db.getAllWorkOrders(ctx.user.id);
   }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
-      const workOrder = await db.getWorkOrderById(input.id);
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      const workOrder = await db.getWorkOrderById(input.id, ctx.user.id);
       if (!workOrder) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Ordem de serviço não encontrada" });
       }
@@ -245,8 +258,9 @@ const workOrdersRouter = router({
 
   getByClientId: protectedProcedure
     .input(z.object({ clientId: z.number() }))
-    .query(async ({ input }) => {
-      return await db.getWorkOrdersByClientId(input.clientId);
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      return await db.getWorkOrdersByClientId(input.clientId, ctx.user.id);
     }),
 
   create: protectedProcedure
@@ -292,9 +306,10 @@ const workOrdersRouter = router({
         completedDate: z.date().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
       const { id, ...data } = input;
-      return await db.updateWorkOrder(id, data);
+      return await db.updateWorkOrder(id, data, ctx.user.id);
     }),
 });
 

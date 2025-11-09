@@ -111,137 +111,136 @@ export async function getUserByOpenId(openId: string) {
 
 // ============ CLIENTS ============
 
-export async function getAllClients() {
+export async function getAllClients(userId: number) {
   const db = await getDb();
   if (!db) return [];
 
-  return await db.select().from(clients).orderBy(desc(clients.createdAt));
+  return await db.select().from(clients).where(eq(clients.userId, userId)).orderBy(desc(clients.createdAt));
 }
 
-export async function getClientById(id: number) {
+export async function getClientById(id: number, userId: number) {
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db.select().from(clients).where(eq(clients.id, id)).limit(1);
+  const result = await db.select().from(clients).where(and(eq(clients.id, id), eq(clients.userId, userId))).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
 export async function createClient(data: typeof clients.$inferInsert) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  if (!data.userId) throw new Error("userId is required");
 
   const result = await db.insert(clients).values(data);
   return result;
 }
 
-export async function updateClient(id: number, data: Partial<typeof clients.$inferInsert>) {
+export async function updateClient(id: number, data: Partial<typeof clients.$inferInsert>, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.update(clients).set(data).where(eq(clients.id, id));
-  return getClientById(id);
+  await db.update(clients).set(data).where(and(eq(clients.id, id), eq(clients.userId, userId)));
+  return getClientById(id, userId);
 }
 
-export async function deleteClient(id: number) {
+export async function deleteClient(id: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.delete(clients).where(eq(clients.id, id));
+  await db.delete(clients).where(and(eq(clients.id, id), eq(clients.userId, userId)));
 }
 
 // ============ EQUIPMENTS ============
 
-export async function getAllEquipments() {
+export async function getAllEquipments(userId: number) {
   const db = await getDb();
   if (!db) return [];
 
-  return await db.select().from(equipments).orderBy(desc(equipments.createdAt));
+  return await db.select().from(equipments).where(eq(equipments.userId, userId)).orderBy(desc(equipments.createdAt));
 }
 
-export async function getEquipmentsByClientId(clientId: number) {
+export async function getEquipmentsByClientId(clientId: number, userId: number) {
   const db = await getDb();
   if (!db) return [];
 
-  return await db
-    .select()
-    .from(equipments)
-    .where(eq(equipments.clientId, clientId))
-    .orderBy(desc(equipments.createdAt));
+  return await db.select().from(equipments).where(and(eq(equipments.clientId, clientId), eq(equipments.userId, userId))).orderBy(desc(equipments.createdAt));
 }
 
-export async function getEquipmentById(id: number) {
+export async function getEquipmentById(id: number, userId: number) {
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db.select().from(equipments).where(eq(equipments.id, id)).limit(1);
+  const result = await db.select().from(equipments).where(and(eq(equipments.id, id), eq(equipments.userId, userId))).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
 export async function createEquipment(data: typeof equipments.$inferInsert) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  if (!data.userId) throw new Error("userId is required");
 
   const result = await db.insert(equipments).values(data);
   return result;
 }
 
-export async function updateEquipment(id: number, data: Partial<typeof equipments.$inferInsert>) {
+export async function updateEquipment(id: number, data: Partial<typeof equipments.$inferInsert>, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.update(equipments).set(data).where(eq(equipments.id, id));
-  return getEquipmentById(id);
+  await db.update(equipments).set(data).where(and(eq(equipments.id, id), eq(equipments.userId, userId)));
+  return getEquipmentById(id, userId);
 }
 
-export async function deleteEquipment(id: number) {
+export async function deleteEquipment(id: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.delete(equipments).where(eq(equipments.id, id));
+  await db.delete(equipments).where(and(eq(equipments.id, id), eq(equipments.userId, userId)));
 }
 
 // ============ WORK ORDERS ============
 
-export async function getAllWorkOrders() {
+export async function getAllWorkOrders(userId: number) {
   const db = await getDb();
   if (!db) return [];
 
-  return await db.select().from(workOrders).orderBy(desc(workOrders.createdAt));
+  return await db.select().from(workOrders).where(eq(workOrders.userId, userId)).orderBy(desc(workOrders.createdAt));
 }
 
-export async function getWorkOrderById(id: number) {
+export async function getWorkOrderById(id: number, userId: number) {
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db.select().from(workOrders).where(eq(workOrders.id, id)).limit(1);
+  const result = await db.select().from(workOrders).where(and(eq(workOrders.id, id), eq(workOrders.userId, userId))).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function getWorkOrdersByClientId(clientId: number) {
+export async function getWorkOrdersByClientId(clientId: number, userId: number) {
   const db = await getDb();
   if (!db) return [];
 
   return await db
     .select()
     .from(workOrders)
-    .where(eq(workOrders.clientId, clientId))
+    .where(and(eq(workOrders.clientId, clientId), eq(workOrders.userId, userId)))
     .orderBy(desc(workOrders.createdAt));
 }
 
 export async function createWorkOrder(data: typeof workOrders.$inferInsert) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  if (!data.userId) throw new Error("userId is required");
 
   const result = await db.insert(workOrders).values(data);
   return result;
 }
 
-export async function updateWorkOrder(id: number, data: Partial<typeof workOrders.$inferInsert>) {
+export async function updateWorkOrder(id: number, data: Partial<typeof workOrders.$inferInsert>, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.update(workOrders).set(data).where(eq(workOrders.id, id));
-  return getWorkOrderById(id);
+  await db.update(workOrders).set(data).where(and(eq(workOrders.id, id), eq(workOrders.userId, userId)));
+  return getWorkOrderById(id, userId);
 }
 
 // ============ WORK ORDER ITEMS ============
@@ -273,44 +272,45 @@ export async function deleteWorkOrderItem(id: number) {
 
 // ============ INVENTORY ============
 
-export async function getAllInventory() {
+export async function getAllInventory(userId: number) {
   const db = await getDb();
   if (!db) return [];
 
-  return await db.select().from(inventory).orderBy(desc(inventory.createdAt));
+  return await db.select().from(inventory).where(eq(inventory.userId, userId)).orderBy(desc(inventory.createdAt));
 }
 
-export async function getInventoryById(id: number) {
+export async function getInventoryById(id: number, userId: number) {
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db.select().from(inventory).where(eq(inventory.id, id)).limit(1);
+  const result = await db.select().from(inventory).where(and(eq(inventory.id, id), eq(inventory.userId, userId))).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function getLowStockItems() {
+export async function getLowStockItems(userId: number) {
   const db = await getDb();
   if (!db) return [];
 
   // Fetch all inventory and filter in JS
-  const allItems = await db.select().from(inventory).orderBy(desc(inventory.createdAt));
+  const allItems = await db.select().from(inventory).where(eq(inventory.userId, userId)).orderBy(desc(inventory.createdAt));
   return allItems.filter((item) => item.quantity <= item.minimumQuantity);
 }
 
 export async function createInventoryItem(data: typeof inventory.$inferInsert) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  if (!data.userId) throw new Error("userId is required");
 
   const result = await db.insert(inventory).values(data);
   return result;
 }
 
-export async function updateInventoryItem(id: number, data: Partial<typeof inventory.$inferInsert>) {
+export async function updateInventoryItem(id: number, data: Partial<typeof inventory.$inferInsert>, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.update(inventory).set(data).where(eq(inventory.id, id));
-  return getInventoryById(id);
+  await db.update(inventory).set(data).where(and(eq(inventory.id, id), eq(inventory.userId, userId)));
+  return getInventoryById(id, userId);
 }
 
 // ============ INVENTORY MOVEMENTS ============
@@ -336,22 +336,22 @@ export async function getInventoryMovements(inventoryId: number) {
 
 // ============ TRANSACTIONS ============
 
-export async function getAllTransactions() {
+export async function getAllTransactions(userId: number) {
   const db = await getDb();
   if (!db) return [];
 
-  return await db.select().from(transactions).orderBy(desc(transactions.createdAt));
+  return await db.select().from(transactions).where(eq(transactions.userId, userId)).orderBy(desc(transactions.createdAt));
 }
 
-export async function getTransactionById(id: number) {
+export async function getTransactionById(id: number, userId: number) {
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db.select().from(transactions).where(eq(transactions.id, id)).limit(1);
+  const result = await db.select().from(transactions).where(and(eq(transactions.id, id), eq(transactions.userId, userId))).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function getTransactionsByDateRange(startDate: Date, endDate: Date) {
+export async function getTransactionsByDateRange(startDate: Date, endDate: Date, userId: number) {
   const db = await getDb();
   if (!db) return [];
 
@@ -367,6 +367,7 @@ export async function getTransactionsByDateRange(startDate: Date, endDate: Date)
     .from(transactions)
     .where(
       and(
+        eq(transactions.userId, userId),
         gte(transactions.createdAt, adjustedStartDate),
         lte(transactions.createdAt, adjustedEndDate)
       )
@@ -377,35 +378,37 @@ export async function getTransactionsByDateRange(startDate: Date, endDate: Date)
 export async function createTransaction(data: typeof transactions.$inferInsert) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  if (!data.userId) throw new Error("userId is required");
 
   const result = await db.insert(transactions).values(data as any);
   return result;
 }
 
-export async function updateTransaction(id: number, data: Partial<typeof transactions.$inferInsert>) {
+export async function updateTransaction(id: number, data: Partial<typeof transactions.$inferInsert>, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.update(transactions).set(data).where(eq(transactions.id, id));
-  return getTransactionById(id);
+  await db.update(transactions).set(data).where(and(eq(transactions.id, id), eq(transactions.userId, userId)));
+  return getTransactionById(id, userId);
 }
 
 // ============ MAINTENANCE HISTORY ============
 
-export async function getMaintenanceHistoryByEquipmentId(equipmentId: number) {
+export async function getMaintenanceHistoryByEquipmentId(equipmentId: number, userId: number) {
   const db = await getDb();
   if (!db) return [];
 
   return await db
     .select()
     .from(maintenanceHistory)
-    .where(eq(maintenanceHistory.equipmentId, equipmentId))
+    .where(and(eq(maintenanceHistory.equipmentId, equipmentId), eq(maintenanceHistory.userId, userId)))
     .orderBy(desc(maintenanceHistory.maintenanceDate));
 }
 
 export async function createMaintenanceRecord(data: typeof maintenanceHistory.$inferInsert) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  if (!data.userId) throw new Error("userId is required");
 
   const result = await db.insert(maintenanceHistory).values(data);
   return result;
@@ -413,16 +416,17 @@ export async function createMaintenanceRecord(data: typeof maintenanceHistory.$i
 
 // ============ CASH CLOSURES ============
 
-export async function getCashClosures() {
+export async function getCashClosures(userId: number) {
   const db = await getDb();
   if (!db) return [];
 
-  return await db.select().from(cashClosures).orderBy(desc(cashClosures.closureDate));
+  return await db.select().from(cashClosures).where(eq(cashClosures.userId, userId)).orderBy(desc(cashClosures.closureDate));
 }
 
 export async function createCashClosure(data: typeof cashClosures.$inferInsert) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  if (!data.userId) throw new Error("userId is required");
 
   const result = await db.insert(cashClosures).values(data);
   return result;
@@ -430,7 +434,7 @@ export async function createCashClosure(data: typeof cashClosures.$inferInsert) 
 
 // ============ DASHBOARD STATS ============
 
-export async function getDailyStats(date: Date) {
+export async function getDailyStats(date: Date, userId: number) {
   const db = await getDb();
   if (!db) return { income: 0, expense: 0, workOrders: 0 };
 
@@ -445,6 +449,7 @@ export async function getDailyStats(date: Date) {
     .from(transactions)
     .where(
       and(
+        eq(transactions.userId, userId),
         gte(transactions.createdAt, startOfDay),
         lte(transactions.createdAt, endOfDay)
       )
@@ -463,6 +468,7 @@ export async function getDailyStats(date: Date) {
     .from(workOrders)
     .where(
       and(
+        eq(workOrders.userId, userId),
         gte(workOrders.createdAt, startOfDay),
         lte(workOrders.createdAt, endOfDay)
       )
