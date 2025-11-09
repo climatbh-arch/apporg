@@ -351,22 +351,25 @@ const workOrderItemsRouter = router({
 // ============ INVENTORY ROUTER ============
 
 const inventoryRouter = router({
-  list: protectedProcedure.query(async () => {
-    return await db.getAllInventory();
+  list: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    return await db.getAllInventory(ctx.user.id);
   }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
-      const item = await db.getInventoryById(input.id);
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      const item = await db.getInventoryById(input.id, ctx.user.id);
       if (!item) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Item de estoque não encontrado" });
       }
       return item;
     }),
 
-  getLowStock: protectedProcedure.query(async () => {
-    return await db.getLowStockItems();
+  getLowStock: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    return await db.getLowStockItems(ctx.user.id);
   }),
 
   create: protectedProcedure
@@ -407,23 +410,26 @@ const inventoryRouter = router({
         supplier: z.string().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
       const { id, ...data } = input;
-      return await db.updateInventoryItem(id, data);
+      return await db.updateInventoryItem(id, data, ctx.user.id);
     }),
 });
 
 // ============ TRANSACTIONS ROUTER ============
 
 const transactionsRouter = router({
-  list: protectedProcedure.query(async () => {
-    return await db.getAllTransactions();
+  list: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    return await db.getAllTransactions(ctx.user.id);
   }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
-      const transaction = await db.getTransactionById(input.id);
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      const transaction = await db.getTransactionById(input.id, ctx.user.id);
       if (!transaction) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Transação não encontrada" });
       }
@@ -437,8 +443,9 @@ const transactionsRouter = router({
         endDate: z.date(),
       })
     )
-    .query(async ({ input }) => {
-      return await db.getTransactionsByDateRange(input.startDate, input.endDate);
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      return await db.getTransactionsByDateRange(input.startDate, input.endDate, ctx.user.id);
     }),
 
   create: protectedProcedure
