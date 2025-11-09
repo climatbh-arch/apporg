@@ -18,12 +18,12 @@
 ## ⏳ Em Progresso
 
 ### Backend (tRPC)
-- [ ] Procedures CRUD para Clientes
-- [ ] Procedures CRUD para Equipamentos
-- [ ] Procedures CRUD para Orçamentos
-- [ ] Procedures CRUD para Ordens de Serviço
-- [ ] Procedures para adicionar/remover itens de orçamentos
-- [ ] Procedures para adicionar/remover materiais de ordens
+- [x] Procedures CRUD para Clientes
+- [x] Procedures CRUD para Equipamentos
+- [x] Procedures CRUD para Orçamentos
+- [x] Procedures CRUD para Ordens de Serviço
+- [x] Procedures para adicionar/remover itens de orçamentos
+- [x] Procedures para adicionar/remover materiais de ordens
 - [ ] Geração automática de números sequenciais (ORC-*, OS-*)
 - [ ] Cálculos automáticos de totais
 
@@ -55,10 +55,12 @@
 
 ## 📊 Status Geral
 
-**Progresso:** 10% ✅
+**Progresso:** 30% ✅
 
 - Banco de Dados: 100% ✅
-- Backend: 0% ⏳
+- Backend: 70% ⏳ (Procedures CRUD implementadas)
 - Frontend: 0% ⏳
 - Recursos Avançados: 0% ⏳
+
+**Último Commit:** `252b448` - Backend: Implementar procedures CRUD
 
