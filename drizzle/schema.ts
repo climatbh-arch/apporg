@@ -196,6 +196,18 @@ export const expenses = mysqlTable("expenses", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+// ============ WORK ORDER HISTORY ============
+export const workOrderHistory = mysqlTable("workOrderHistory", {
+  id: int("id").autoincrement().primaryKey(),
+  workOrderId: int("workOrderId").notNull(),
+  action: varchar("action", { length: 100 }).notNull(),
+  previousStatus: varchar("previousStatus", { length: 50 }),
+  newStatus: varchar("newStatus", { length: 50 }),
+  changedFields: text("changedFields"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 // ============ TYPES ============
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -232,3 +244,6 @@ export type InsertPayment = typeof payments.$inferInsert;
 
 export type Expense = typeof expenses.$inferSelect;
 export type InsertExpense = typeof expenses.$inferInsert;
+
+export type WorkOrderHistory = typeof workOrderHistory.$inferSelect;
+export type InsertWorkOrderHistory = typeof workOrderHistory.$inferInsert;

@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
+import { editRouter } from "./routers/editRouter";
 
 // ============ CLIENTS ROUTER ============
 const clientsRouter = router({
@@ -353,6 +354,7 @@ export const appRouter = router({
   payments: paymentsRouter,
   expenses: expensesRouter,
   financial: financialRouter,
+  edit: editRouter,
 });
 
 export type AppRouter = typeof appRouter;

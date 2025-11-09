@@ -15,6 +15,13 @@
       "when": 1762713837889,
       "tag": "0001_fuzzy_blizzard",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1762714278188,
+      "tag": "0002_minor_harpoon",
+      "breakpoints": true
     }
   ]
 }
