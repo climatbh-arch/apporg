@@ -1,0 +1,40 @@
+{
+  "query": "SHOW CREATE TABLE workOrders;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3uabyMD38DTuLvb.41ec3e84a5a9 --database fra9e9sgFsqVvSNtWgx9YW --execute SHOW CREATE TABLE workOrders;",
+  "rows": [
+    {
+      "Table": "workOrders",
+      "Create Table": "CREATE TABLE `workOrders` ("
+    }
+  ],
+  "messages": [
+    "  `id` int(11) NOT NULL AUTO_INCREMENT,",
+    "  `userId` int(11) NOT NULL,",
+    "  `workOrderNumber` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,",
+    "  `quoteId` int(11) DEFAULT NULL,",
+    "  `clientId` int(11) NOT NULL,",
+    "  `clientName` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,",
+    "  `clientEmail` varchar(320) COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `clientPhone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `clientWhatsapp` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `serviceDescription` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `technician` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `laborHours` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '0',",
+    "  `laborCostPerHour` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '0',",
+    "  `laborTotal` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '0',",
+    "  `materialsTotal` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '0',",
+    "  `totalValue` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '0',",
+    "  `status` enum('open','in_progress','completed','delivered','cancelled') COLLATE utf8mb4_unicode_ci DEFAULT 'open',",
+    "  `openedAt` date DEFAULT NULL,",
+    "  `completedAt` date DEFAULT NULL,",
+    "  `notes` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+    "  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,",
+    "  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,",
+    "  UNIQUE KEY `workOrders_workOrderNumber_unique` (`workOrderNumber`)",
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+  ],
+  "stdout": "Table\tCreate Table\nworkOrders\tCREATE TABLE `workOrders` (\n  `id` int(11) NOT NULL AUTO_INCREMENT,\n  `userId` int(11) NOT NULL,\n  `workOrderNumber` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `quoteId` int(11) DEFAULT NULL,\n  `clientId` int(11) NOT NULL,\n  `clientName` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `clientEmail` varchar(320) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `clientPhone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `clientWhatsapp` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `serviceDescription` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `technician` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `laborHours` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '0',\n  `laborCostPerHour` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '0',\n  `laborTotal` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '0',\n  `materialsTotal` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '0',\n  `totalValue` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '0',\n  `status` enum('open','in_progress','completed','delivered','cancelled') COLLATE utf8mb4_unicode_ci DEFAULT 'open',\n  `openedAt` date DEFAULT NULL,\n  `completedAt` date DEFAULT NULL,\n  `notes` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,\n  UNIQUE KEY `workOrders_workOrderNumber_unique` (`workOrderNumber`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci\n",
+  "stderr": "",
+  "execution_time_ms": 518
+}

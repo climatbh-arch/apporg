@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE workOrders \nADD COLUMN technicianId INT DEFAULT NULL AFTER serviceDescription,\nADD COLUMN clientSignature TEXT DEFAULT NULL AFTER completedAt,\nADD COLUMN signedAt TIMESTAMP DEFAULT NULL AFTER clientSignature;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3uabyMD38DTuLvb.41ec3e84a5a9 --database fra9e9sgFsqVvSNtWgx9YW --execute ALTER TABLE workOrders \nADD COLUMN technicianId INT DEFAULT NULL AFTER serviceDescription,\nADD COLUMN clientSignature TEXT DEFAULT NULL AFTER completedAt,\nADD COLUMN signedAt TIMESTAMP DEFAULT NULL AFTER clientSignature;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'clientsignature' in 'workOrders'"
+  ]
+}
