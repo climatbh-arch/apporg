@@ -90,7 +90,10 @@ export async function createClient(data: InsertClient) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(clients).values(data);
-  return data;
+  // Get the inserted client with ID
+  const insertedClient = await db.select().from(clients).where(eq(clients.userId, data.userId)).orderBy(desc(clients.id)).limit(1);
+  if (!insertedClient[0]) throw new Error("Failed to retrieve inserted client");
+  return insertedClient[0];
 }
 
 export async function updateClient(id: number, data: Partial<InsertClient>, userId: number) {
@@ -124,8 +127,14 @@ export async function getTechnicianById(id: number, userId: number) {
 export async function createTechnician(data: InsertTechnician) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.insert(technicians).values(data);
-  return data;
+  // Convert hourlyRate to string if it's a number
+  const processedData = {
+    ...data,
+    hourlyRate: data.hourlyRate ? String(data.hourlyRate) : "0"
+  };
+  const result = await db.insert(technicians).values(processedData);
+  const insertedTechnician = await db.select().from(technicians).where(eq(technicians.userId, data.userId)).orderBy(desc(technicians.id)).limit(1);
+  return insertedTechnician[0] || processedData;
 }
 
 export async function updateTechnician(id: number, data: Partial<InsertTechnician>, userId: number) {
@@ -195,7 +204,9 @@ export async function createQuote(data: InsertQuote) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(quotes).values(data);
-  return data;
+  // Get the inserted quote with ID
+  const insertedQuote = await db.select().from(quotes).where(eq(quotes.userId, data.userId)).orderBy(desc(quotes.id)).limit(1);
+  return insertedQuote[0] || data;
 }
 
 export async function updateQuote(id: number, data: Partial<InsertQuote>, userId: number) {

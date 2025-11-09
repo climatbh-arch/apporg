@@ -20,7 +20,7 @@ export async function generateQuotePDF(quote: any, items: any[]): Promise<Buffer
     const doc = new PDFDocument();
     const chunks: Buffer[] = [];
 
-    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
@@ -89,7 +89,7 @@ export async function generateWorkOrderPDF(workOrder: any, items: any[]): Promis
     const doc = new PDFDocument();
     const chunks: Buffer[] = [];
 
-    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 

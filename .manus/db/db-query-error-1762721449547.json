@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO quotes (userId, clientId, quoteNumber, serviceDescription, subtotal, discountPercent, discountAmount, totalValue, status) VALUES (1, 1, 'ORC-TEST', 'Test Service', '500.00', '10', '50.00', '450.00', 'draft');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3uabyMD38DTuLvb.41ec3e84a5a9 --database fra9e9sgFsqVvSNtWgx9YW --execute INSERT INTO quotes (userId, clientId, quoteNumber, serviceDescription, subtotal, discountPercent, discountAmount, totalValue, status) VALUES (1, 1, 'ORC-TEST', 'Test Service', '500.00', '10', '50.00', '450.00', 'draft');",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1364 (HY000) at line 1: Field 'clientName' doesn't have a default value"
+  ]
+}

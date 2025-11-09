@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO clients (userId, name, email, phone, whatsapp) VALUES (1, 'Test Client', 'test@example.com', '(11) 98765-4321', '(11) 98765-4321');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3uabyMD38DTuLvb.41ec3e84a5a9 --database fra9e9sgFsqVvSNtWgx9YW --execute INSERT INTO clients (userId, name, email, phone, whatsapp) VALUES (1, 'Test Client', 'test@example.com', '(11) 98765-4321', '(11) 98765-4321');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 418
+}

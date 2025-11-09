@@ -55,6 +55,8 @@ export default function QuotesPage() {
     },
   });
 
+  const createClientMutation = trpc.clients.create.useMutation();
+
   const deleteQuoteMutation = trpc.quotes.delete.useMutation({
     onSuccess: () => {
       toast.success("Orçamento deletado com sucesso!");
@@ -65,29 +67,42 @@ export default function QuotesPage() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.clientName || !formData.subtotal) {
       toast.error("Preencha os campos obrigatórios");
       return;
     }
 
-    const discountAmount = (parseFloat(formData.subtotal) * parseFloat(formData.discountPercent)) / 100;
-    const totalValue = parseFloat(formData.subtotal) - discountAmount;
-    createQuoteMutation.mutate({
-      clientId: 1,
-      clientName: formData.clientName,
-      clientEmail: formData.clientEmail,
-      clientPhone: formData.clientPhone,
-      clientWhatsapp: formData.clientWhatsapp,
-      serviceDescription: formData.serviceDescription,
-      subtotal: formData.subtotal,
-      discountPercent: formData.discountPercent,
-      discountAmount: discountAmount.toString(),
-      totalValue: totalValue.toString(),
-      validityDate: formData.validityDate ? new Date(formData.validityDate) : undefined,
-      notes: formData.notes,
-    });
+    try {
+      // Criar cliente primeiro
+      const clientResult = await createClientMutation.mutateAsync({
+        name: formData.clientName,
+        email: formData.clientEmail || undefined,
+        phone: formData.clientPhone || undefined,
+        whatsapp: formData.clientWhatsapp || undefined,
+      });
+
+      const discountAmount = (parseFloat(formData.subtotal) * parseFloat(formData.discountPercent)) / 100;
+      const totalValue = parseFloat(formData.subtotal) - discountAmount;
+      createQuoteMutation.mutate({
+        clientId: clientResult.id,
+        clientName: formData.clientName,
+        clientEmail: formData.clientEmail,
+        clientPhone: formData.clientPhone,
+        clientWhatsapp: formData.clientWhatsapp,
+        serviceDescription: formData.serviceDescription,
+        subtotal: formData.subtotal,
+        discountPercent: formData.discountPercent,
+        discountAmount: discountAmount.toString(),
+        totalValue: totalValue.toString(),
+        validityDate: formData.validityDate ? new Date(formData.validityDate) : undefined,
+        notes: formData.notes,
+      });
+    } catch (error) {
+      toast.error("Erro ao criar cliente");
+      console.error(error);
+    }
   };
 
   const calculateTotal = () => {

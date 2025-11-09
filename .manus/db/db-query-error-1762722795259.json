@@ -1,0 +1,8 @@
+{
+  "query": "SELECT `id`, `userId`, `name`, `cpf`, `email`, `phone`, `role`, `hourlyRate`, `isActive`, `notes`, `createdAt`, `updatedAt` FROM `technicians` WHERE `technicians`.`userId` = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3uabyMD38DTuLvb.41ec3e84a5a9 --database fra9e9sgFsqVvSNtWgx9YW --execute SELECT `id`, `userId`, `name`, `cpf`, `email`, `phone`, `role`, `hourlyRate`, `isActive`, `notes`, `createdAt`, `updatedAt` FROM `technicians` WHERE `technicians`.`userId` = 1;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'isactive' in 'field list'"
+  ]
+}

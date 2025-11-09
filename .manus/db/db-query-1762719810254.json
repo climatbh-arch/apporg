@@ -1,0 +1,21 @@
+{
+  "query": "SELECT * FROM users LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3uabyMD38DTuLvb.41ec3e84a5a9 --database fra9e9sgFsqVvSNtWgx9YW --execute SELECT * FROM users LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "openId": "QdU8BiBmqKNKnyeBg8MGPo",
+      "name": "Climat bh",
+      "email": "climatbh@gmail.com",
+      "loginMethod": "google",
+      "role": "admin",
+      "createdAt": "2025-11-09 18:33:05",
+      "updatedAt": "2025-11-09 20:23:04",
+      "lastSignedIn": "2025-11-09 20:23:04"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenId\tname\temail\tloginMethod\trole\tcreatedAt\tupdatedAt\tlastSignedIn\n1\tQdU8BiBmqKNKnyeBg8MGPo\tClimat bh\tclimatbh@gmail.com\tgoogle\tadmin\t2025-11-09 18:33:05\t2025-11-09 20:23:04\t2025-11-09 20:23:04\n",
+  "stderr": "",
+  "execution_time_ms": 504
+}
