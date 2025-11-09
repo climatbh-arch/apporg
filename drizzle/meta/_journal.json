@@ -1,5 +1,13 @@
-﻿{
+{
   "version": "5",
-  "dialect": "postgresql",
-  "entries": []
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1762709663305,
+      "tag": "0000_classy_warbound",
+      "breakpoints": true
+    }
+  ]
 }
