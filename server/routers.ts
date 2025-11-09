@@ -475,9 +475,10 @@ const transactionsRouter = router({
         paidDate: z.date().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
       const { id, ...data } = input;
-      return await db.updateTransaction(id, data);
+      return await db.updateTransaction(id, data, ctx.user.id);
     }),
 });
 
@@ -486,8 +487,9 @@ const transactionsRouter = router({
 const maintenanceHistoryRouter = router({
   getByEquipmentId: protectedProcedure
     .input(z.object({ equipmentId: z.number() }))
-    .query(async ({ input }) => {
-      return await db.getMaintenanceHistoryByEquipmentId(input.equipmentId);
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      return await db.getMaintenanceHistoryByEquipmentId(input.equipmentId, ctx.user.id);
     }),
 
   create: protectedProcedure
@@ -501,8 +503,9 @@ const maintenanceHistoryRouter = router({
         nextMaintenanceDate: z.date().optional(),
       })
     )
-    .mutation(async ({ input }) => {
-      const result = await db.createMaintenanceRecord(input);
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      const result = await db.createMaintenanceRecord({ ...input, userId: ctx.user.id });
       return result;
     }),
 });
@@ -512,17 +515,20 @@ const maintenanceHistoryRouter = router({
 const dashboardRouter = router({
   getDailyStats: protectedProcedure
     .input(z.object({ date: z.date() }))
-    .query(async ({ input }) => {
-      return await db.getDailyStats(input.date);
+    .query(async ({ input, ctx }) => {
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      return await db.getDailyStats(input.date, ctx.user.id);
     }),
 
-  getPendingWorkOrders: protectedProcedure.query(async () => {
-    const allOrders = await db.getAllWorkOrders();
+  getPendingWorkOrders: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    const allOrders = await db.getAllWorkOrders(ctx.user.id);
     return allOrders.filter((order) => order.status === "pending" || order.status === "in_progress");
   }),
 
-  getLowStockAlert: protectedProcedure.query(async () => {
-    return await db.getLowStockItems();
+  getLowStockAlert: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+    return await db.getLowStockItems(ctx.user.id);
   }),
 });
 
