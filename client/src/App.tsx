@@ -12,11 +12,13 @@ import WorkOrders from "./pages/WorkOrders";
 import Inventory from "./pages/Inventory";
 import Financial from "./pages/Financial";
 import Reports from "./pages/Reports";
+import AdminPanel from "./pages/AdminPanel";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Dashboard} />
+      <Route path={"/admin"} component={AdminPanel} />
       <Route path={"/clients"} component={Clients} />
       <Route path={"/equipments"} component={Equipments} />
       <Route path={"/quotes"} component={Quotes} />

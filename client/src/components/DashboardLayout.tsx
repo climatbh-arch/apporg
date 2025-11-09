@@ -27,7 +27,7 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
-import { Wrench, FileText, Package, DollarSign, BarChart3 } from "lucide-react";
+import { Wrench, FileText, Package, DollarSign, BarChart3, Shield } from "lucide-react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -38,6 +38,10 @@ const menuItems = [
   { icon: Package, label: "Estoque", path: "/inventory" },
   { icon: DollarSign, label: "Financeiro", path: "/financial" },
   { icon: BarChart3, label: "Relatórios", path: "/reports" },
+];
+
+const adminMenuItems = [
+  { icon: Shield, label: "Painel de Admin", path: "/admin" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -55,6 +59,10 @@ export default function DashboardLayout({
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
+  
+  const displayMenuItems = user?.role === 'admin' 
+    ? [...adminMenuItems, ...menuItems]
+    : menuItems;
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -217,7 +225,7 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.map(item => {
+              {displayMenuItems.map(item => {
                 const isActive = location === item.path;
                 return (
                   <SidebarMenuItem key={item.path}>
