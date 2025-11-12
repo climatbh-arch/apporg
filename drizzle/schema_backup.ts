@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp, varchar, date, boolean, serial, decimal } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp, varchar, date, boolean, serial } from "drizzle-orm/pg-core";
 
 // ============ USERS ============
 export const users = pgTable("users", {
@@ -27,10 +27,6 @@ export const clients = pgTable("clients", {
   state: varchar("state", { length: 2 }),
   zipCode: varchar("zipCode", { length: 10 }),
   notes: text("notes"),
-  contractType: varchar("contractType", { length: 50 }).default("on_demand"),
-  segmentation: varchar("segmentation", { length: 50 }),
-  latitude: decimal("latitude", { precision: 10, scale: 8 }),
-  longitude: decimal("longitude", { precision: 11, scale: 8 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -46,77 +42,6 @@ export const technicians = pgTable("technicians", {
   role: varchar("role", { length: 100 }),
   hourlyRate: varchar("hourlyRate", { length: 20 }).default("0"),
   isActive: boolean("isActive").default(true),
-  notes: text("notes"),
-  currentStatus: varchar("currentStatus", { length: 50 }).default("available"),
-  currentLatitude: decimal("currentLatitude", { precision: 10, scale: 8 }),
-  currentLongitude: decimal("currentLongitude", { precision: 11, scale: 8 }),
-  workZone: varchar("workZone", { length: 100 }),
-  maxWorkOrdersPerDay: integer("maxWorkOrdersPerDay").default(8),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
-
-// ============ TECHNICIAN SKILLS ============
-export const technicianSkills = pgTable("technicianSkills", {
-  id: serial("id").primaryKey(),
-  technicianId: integer("technicianId").notNull(),
-  skillName: varchar("skillName", { length: 100 }).notNull(),
-  skillLevel: varchar("skillLevel", { length: 50 }).default("intermediate"),
-  certificationNumber: varchar("certificationNumber", { length: 100 }),
-  certificationDate: date("certificationDate"),
-  expiryDate: date("expiryDate"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
-
-// ============ TECHNICIAN LOCATIONS ============
-export const technicianLocations = pgTable("technicianLocations", {
-  id: serial("id").primaryKey(),
-  technicianId: integer("technicianId").notNull(),
-  latitude: decimal("latitude", { precision: 10, scale: 8 }).notNull(),
-  longitude: decimal("longitude", { precision: 11, scale: 8 }).notNull(),
-  accuracy: decimal("accuracy", { precision: 10, scale: 2 }),
-  status: varchar("status", { length: 50 }).default("available"),
-  workOrderId: integer("workOrderId"),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-// ============ ASSETS ============
-export const assets = pgTable("assets", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
-  clientId: integer("clientId").notNull(),
-  serialNumber: varchar("serialNumber", { length: 100 }).notNull().unique(),
-  brand: varchar("brand", { length: 100 }).notNull(),
-  model: varchar("model", { length: 100 }).notNull(),
-  capacity: varchar("capacity", { length: 50 }),
-  installationDate: date("installationDate"),
-  warrantyDate: date("warrantyDate"),
-  physicalLocation: text("physicalLocation"),
-  lastWorkOrderId: integer("lastWorkOrderId"),
-  nextMaintenanceDate: date("nextMaintenanceDate"),
-  assetType: varchar("assetType", { length: 50 }).default("air_conditioner"),
-  status: varchar("status", { length: 50 }).default("active"),
-  notes: text("notes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
-
-// ============ MAINTENANCE CONTRACTS ============
-export const maintenanceContracts = pgTable("maintenanceContracts", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
-  clientId: integer("clientId").notNull(),
-  contractNumber: varchar("contractNumber", { length: 50 }).notNull().unique(),
-  assetId: integer("assetId"),
-  contractType: varchar("contractType", { length: 50 }).default("preventive"),
-  frequency: varchar("frequency", { length: 50 }).default("monthly"),
-  value: varchar("value", { length: 20 }).notNull(),
-  startDate: date("startDate").notNull(),
-  endDate: date("endDate"),
-  status: varchar("status", { length: 50 }).default("active"),
-  autoRenew: boolean("autoRenew").default(false),
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -210,18 +135,6 @@ export const workOrders = pgTable("workOrders", {
   clientSignature: text("clientSignature"),
   signedAt: timestamp("signedAt"),
   notes: text("notes"),
-  assetId: integer("assetId"),
-  serviceType: varchar("serviceType", { length: 50 }).default("corrective"),
-  priority: integer("priority").default(5),
-  slaLevel: varchar("slaLevel", { length: 50 }).default("normal"),
-  scheduledDate: timestamp("scheduledDate"),
-  estimatedDuration: integer("estimatedDuration"),
-  checkInTime: timestamp("checkInTime"),
-  checkOutTime: timestamp("checkOutTime"),
-  checkInLatitude: decimal("checkInLatitude", { precision: 10, scale: 8 }),
-  checkInLongitude: decimal("checkInLongitude", { precision: 11, scale: 8 }),
-  checkOutLatitude: decimal("checkOutLatitude", { precision: 10, scale: 8 }),
-  checkOutLongitude: decimal("checkOutLongitude", { precision: 11, scale: 8 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -247,34 +160,6 @@ export const workOrderChecklist = pgTable("workOrderChecklist", {
   isCompleted: boolean("isCompleted").default(false),
   completedAt: timestamp("completedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-// ============ WORK ORDER PHOTOS ============
-export const workOrderPhotos = pgTable("workOrderPhotos", {
-  id: serial("id").primaryKey(),
-  workOrderId: integer("workOrderId").notNull(),
-  photoUrl: text("photoUrl").notNull(),
-  photoType: varchar("photoType", { length: 50 }).default("before"),
-  latitude: decimal("latitude", { precision: 10, scale: 8 }),
-  longitude: decimal("longitude", { precision: 11, scale: 8 }),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-// ============ DISPATCH QUEUE ============
-export const dispatchQueue = pgTable("dispatchQueue", {
-  id: serial("id").primaryKey(),
-  workOrderId: integer("workOrderId").notNull(),
-  priority: integer("priority").default(5),
-  slaLevel: varchar("slaLevel", { length: 50 }).default("normal"),
-  requiredSkills: text("requiredSkills"),
-  estimatedDuration: integer("estimatedDuration"),
-  suggestedTechnicianId: integer("suggestedTechnicianId"),
-  assignmentScore: decimal("assignmentScore", { precision: 5, scale: 2 }),
-  status: varchar("status", { length: 50 }).default("pending"),
-  assignedAt: timestamp("assignedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 // ============ PAYMENTS ============
@@ -323,27 +208,6 @@ export const workOrderHistory = pgTable("workOrderHistory", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-// ============ AUTOMATED NOTIFICATIONS ============
-export const automatedNotifications = pgTable("automatedNotifications", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
-  notificationType: varchar("notificationType", { length: 50 }).notNull(),
-  recipientType: varchar("recipientType", { length: 50 }).notNull(),
-  recipientId: integer("recipientId").notNull(),
-  recipientContact: varchar("recipientContact", { length: 100 }).notNull(),
-  channel: varchar("channel", { length: 50 }).default("email"),
-  subject: varchar("subject", { length: 255 }),
-  message: text("message").notNull(),
-  status: varchar("status", { length: 50 }).default("pending"),
-  scheduledFor: timestamp("scheduledFor"),
-  sentAt: timestamp("sentAt"),
-  errorMessage: text("errorMessage"),
-  relatedEntityType: varchar("relatedEntityType", { length: 50 }),
-  relatedEntityId: integer("relatedEntityId"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
-
 // ============ TYPES ============
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -353,18 +217,6 @@ export type InsertClient = typeof clients.$inferInsert;
 
 export type Technician = typeof technicians.$inferSelect;
 export type InsertTechnician = typeof technicians.$inferInsert;
-
-export type TechnicianSkill = typeof technicianSkills.$inferSelect;
-export type InsertTechnicianSkill = typeof technicianSkills.$inferInsert;
-
-export type TechnicianLocation = typeof technicianLocations.$inferSelect;
-export type InsertTechnicianLocation = typeof technicianLocations.$inferInsert;
-
-export type Asset = typeof assets.$inferSelect;
-export type InsertAsset = typeof assets.$inferInsert;
-
-export type MaintenanceContract = typeof maintenanceContracts.$inferSelect;
-export type InsertMaintenanceContract = typeof maintenanceContracts.$inferInsert;
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
@@ -387,12 +239,6 @@ export type InsertWorkOrderItem = typeof workOrderItems.$inferInsert;
 export type WorkOrderChecklist = typeof workOrderChecklist.$inferSelect;
 export type InsertWorkOrderChecklist = typeof workOrderChecklist.$inferInsert;
 
-export type WorkOrderPhoto = typeof workOrderPhotos.$inferSelect;
-export type InsertWorkOrderPhoto = typeof workOrderPhotos.$inferInsert;
-
-export type DispatchQueue = typeof dispatchQueue.$inferSelect;
-export type InsertDispatchQueue = typeof dispatchQueue.$inferInsert;
-
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = typeof payments.$inferInsert;
 
@@ -401,6 +247,3 @@ export type InsertExpense = typeof expenses.$inferInsert;
 
 export type WorkOrderHistory = typeof workOrderHistory.$inferSelect;
 export type InsertWorkOrderHistory = typeof workOrderHistory.$inferInsert;
-
-export type AutomatedNotification = typeof automatedNotifications.$inferSelect;
-export type InsertAutomatedNotification = typeof automatedNotifications.$inferInsert;

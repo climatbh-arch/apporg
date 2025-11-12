@@ -10,6 +10,9 @@ import WorkOrdersPage from "./pages/WorkOrdersPage";
 import TechniciansPage from "./pages/TechniciansPage";
 import ProductsPage from "./pages/ProductsPage";
 import FinancialPage from "./pages/FinancialPage";
+import AssetsPage from "./pages/AssetsPage";
+import ScheduleBoardPage from "./pages/ScheduleBoardPage";
+import AutomationsPage from "./pages/AutomationsPage";
 
 function Router() {
   return (
@@ -20,6 +23,9 @@ function Router() {
       <Route path={"/technicians"} component={TechniciansPage} />
       <Route path={"/products"} component={ProductsPage} />
       <Route path={"/financial"} component={FinancialPage} />
+      <Route path={"/assets"} component={AssetsPage} />
+      <Route path={"/schedule-board"} component={ScheduleBoardPage} />
+      <Route path={"/automations"} component={AutomationsPage} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
