@@ -8,7 +8,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { useState } from "react";
+interface Quote {
+  id: number;
+  quoteNumber: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  clientWhatsapp: string;
+  serviceDescription: string;
+  subtotal: string;
+  discountPercent: string;
+  discountAmount: string;
+  totalValue: string;
+  validityDate: Date | null;
+  notes: string;
+  status: "draft" | "sent" | "approved" | "rejected" | "converted";
+  createdAt: Date;
+}
 import { Plus, Trash2, Edit2, FileText } from "lucide-react";
 import { toast } from "sonner";
 
@@ -301,7 +317,7 @@ export default function QuotesPage() {
             <CardDescription>Todos os orçamentos cadastrados</CardDescription>
           </CardHeader>
           <CardContent>
-            {quotes && quotes.length > 0 ? (
+            {(quotes as Quote[] | undefined) && (quotes as Quote[]).length > 0 ? (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -315,7 +331,7 @@ export default function QuotesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {quotes.map((quote) => (
+                    {(quotes as Quote[]).map((quote: Quote) => (
                       <TableRow key={quote.id}>
                         <TableCell className="font-medium">{quote.quoteNumber}</TableCell>
                         <TableCell>{quote.clientName}</TableCell>

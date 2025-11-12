@@ -125,7 +125,7 @@ export default function ScheduleBoardPage() {
     },
   });
 
-  const filteredOrders = workOrders.filter((order: WorkOrder) => {
+  const filteredOrders = (workOrders as WorkOrder[]).filter((order: WorkOrder) => {
     if (filterStatus === "all") return true;
     if (filterStatus === "unassigned") return !order.technicianId;
     return order.status === filterStatus;
@@ -308,7 +308,7 @@ export default function ScheduleBoardPage() {
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {technicians.map((tech: Technician) => (
+                  {(technicians as Technician[]).map((tech: Technician) => (
                     <Card key={tech.id}>
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start mb-2">
@@ -359,13 +359,13 @@ export default function ScheduleBoardPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total de OS:</span>
-                  <span className="font-semibold">{workOrders.length}</span>
+                  <span className="font-semibold">{(workOrders as WorkOrder[]).length}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Não Atribuídas:</span>
                   <span className="font-semibold">
                     {
-                      workOrders.filter((o: WorkOrder) => !o.technicianId)
+                      (workOrders as WorkOrder[]).filter((o: WorkOrder) => !o.technicianId)
                         .length
                     }
                   </span>
@@ -376,7 +376,7 @@ export default function ScheduleBoardPage() {
                   </span>
                   <span className="font-semibold">
                     {
-                      technicians.filter(
+                      (technicians as Technician[]).filter(
                         (t: Technician) => t.currentStatus === "available"
                       ).length
                     }

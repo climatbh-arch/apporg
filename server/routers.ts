@@ -63,7 +63,7 @@ const quotesRouter = router({
     clientId: z.number(), clientName: z.string().min(1), clientEmail: z.string().email().optional(),
     clientPhone: z.string().optional(), clientWhatsapp: z.string().optional(),
     serviceDescription: z.string().optional(), subtotal: z.string(), discountPercent: z.string(),
-    discountAmount: z.string(), totalValue: z.string(), validityDate: z.date().optional(),
+    discountAmount: z.string(), totalValue: z.string(), validityDate: z.string().optional(),
     notes: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
     try {
@@ -81,7 +81,7 @@ const quotesRouter = router({
     serviceDescription: z.string().optional(), subtotal: z.string().optional(),
     discountPercent: z.string().optional(), discountAmount: z.string().optional(),
     totalValue: z.string().optional(), status: z.enum(["draft", "sent", "approved", "rejected", "converted"]).optional(),
-    validityDate: z.date().optional(), notes: z.string().optional(),
+    validityDate: z.string().optional(), notes: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
     const { id, ...data } = input;
     const userId = ctx.user?.id || 1;
@@ -127,7 +127,7 @@ const workOrdersRouter = router({
     clientWhatsapp: z.string().optional(), serviceDescription: z.string().optional(),
     technicianId: z.number().optional(), technician: z.string().optional(),
     laborHours: z.string(), laborCostPerHour: z.string(), laborTotal: z.string(),
-    materialsTotal: z.string(), totalValue: z.string(), openedAt: z.date().optional(),
+    materialsTotal: z.string(), totalValue: z.string(), openedAt: z.string().optional(),
     notes: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
     const workOrderNumber = `OS-${Date.now()}`;
@@ -140,7 +140,7 @@ const workOrdersRouter = router({
     laborHours: z.string().optional(), laborCostPerHour: z.string().optional(),
     laborTotal: z.string().optional(), materialsTotal: z.string().optional(),
     totalValue: z.string().optional(), status: z.enum(["open", "in_progress", "completed", "delivered", "cancelled"]).optional(),
-    completedAt: z.date().optional(), notes: z.string().optional(),
+    completedAt: z.string().optional(), notes: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
     const { id, ...data } = input;
     return await db.updateWorkOrder(id, data, (ctx.user?.id || 1));
@@ -250,7 +250,7 @@ const paymentsRouter = router({
   create: publicProcedure.input(z.object({
     workOrderId: z.number().optional(), quoteId: z.number().optional(), clientId: z.number(),
     clientName: z.string(), amount: z.string(), paymentMethod: z.enum(["cash", "card", "pix", "boleto", "transfer"]),
-    status: z.enum(["pending", "paid", "overdue", "cancelled"]).optional(), dueDate: z.date().optional(),
+    status: z.enum(["pending", "paid", "overdue", "cancelled"]).optional(), dueDate: z.string().optional(),
     notes: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
     return await db.createPayment({ ...input, userId: (ctx.user?.id || 1) });
@@ -258,7 +258,7 @@ const paymentsRouter = router({
   update: publicProcedure.input(z.object({
     id: z.number(), status: z.enum(["pending", "paid", "overdue", "cancelled"]).optional(),
     amount: z.string().optional(), paymentMethod: z.enum(["cash", "card", "pix", "boleto", "transfer"]).optional(),
-    paidAt: z.date().optional(), notes: z.string().optional(),
+    paidAt: z.string().optional(), notes: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
     const { id, ...data } = input;
     return await db.updatePayment(id, data, (ctx.user?.id || 1));
@@ -282,7 +282,7 @@ const expensesRouter = router({
   create: publicProcedure.input(z.object({
     description: z.string().min(1), category: z.string().optional(), amount: z.string(),
     paymentMethod: z.enum(["cash", "card", "pix", "boleto", "transfer"]),
-    status: z.enum(["pending", "paid"]).optional(), dueDate: z.date().optional(),
+    status: z.enum(["pending", "paid"]).optional(), dueDate: z.string().optional(),
     notes: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
     return await db.createExpense({ ...input, userId: (ctx.user?.id || 1) });
@@ -290,7 +290,7 @@ const expensesRouter = router({
   update: publicProcedure.input(z.object({
     id: z.number(), description: z.string().optional(), category: z.string().optional(),
     amount: z.string().optional(), paymentMethod: z.enum(["cash", "card", "pix", "boleto", "transfer"]).optional(),
-    status: z.enum(["pending", "paid"]).optional(), paidAt: z.date().optional(),
+    status: z.enum(["pending", "paid"]).optional(), paidAt: z.string().optional(),
     notes: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
     const { id, ...data } = input;
@@ -305,9 +305,9 @@ const expensesRouter = router({
 // ============ FINANCIAL ROUTER ============
 const financialRouter = router({
   getReport: publicProcedure.input(z.object({
-    startDate: z.date().optional(), endDate: z.date().optional(),
+    startDate: z.string().optional(), endDate: z.string().optional(),
   })).query(async ({ input, ctx }) => {
-    return await db.getFinancialReport((ctx.user?.id || 1), input.startDate, input.endDate);
+    return await db.getFinancialReport((ctx.user?.id || 1), input.startDate ? new Date(input.startDate) : undefined, input.endDate ? new Date(input.endDate) : undefined);
   }),
 });
 
